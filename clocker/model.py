@@ -12,7 +12,7 @@ class WorkDay:
     date: date
     start: Optional[time] = None
     end: Optional[time] = None
-    pause: Optional[timedelta] = None
+    pause: Optional[timedelta] = timedelta(0)
 
     @property
     def duration(self) -> timedelta:
