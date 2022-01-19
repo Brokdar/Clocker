@@ -28,6 +28,22 @@ def load(day: date) -> Optional[WorkDay]:
 
     return data[day] if day in data else None
 
+def remove(day: date) -> bool:
+    """Removes an already existing record from the database.
+
+    Args:
+        day (date): workday to remove
+
+    Returns:
+        bool: True if successful removed else False
+    """
+
+    if day in data:
+        del data[day]
+        return True
+
+    return False
+
 def load_month(month: int, year: int) -> list[WorkDay]:
     """Loads all available records stored in the database for the given month and year.
 
