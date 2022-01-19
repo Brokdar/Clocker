@@ -77,11 +77,13 @@ def test_update_start_time():
     tracker.track(today, begin, end, pause)
 
     begin = time(7,30)
-    tracker.track(today, begin, end, pause)
+    tracker.track(today, begin, None, None)
 
     result = database.load(today)
     assert result
     assert result.start == begin
+    assert result.end == end
+    assert result.pause == pause
 
 def test_update_end_time():
     today = datetime.now().date()
@@ -91,11 +93,13 @@ def test_update_end_time():
     tracker.track(today, begin, end, pause)
 
     end = time(18,0)
-    tracker.track(today, begin, end, pause)
+    tracker.track(today, None, end, None)
 
     result = database.load(today)
     assert result
+    assert result.start == begin
     assert result.end == end
+    assert result.pause == pause
 
 def test_update_pause_time():
     today = datetime.now().date()
@@ -105,10 +109,12 @@ def test_update_pause_time():
     tracker.track(today, begin, end, pause)
 
     pause = timedelta(minutes=60)
-    tracker.track(today, begin, end, pause)
+    tracker.track(today, None, None, pause)
 
     result = database.load(today)
     assert result
+    assert result.start == begin
+    assert result.end == end
     assert result.pause == pause
 
 def test_raises_exception_on_stop_if_no_record_exist():
@@ -119,3 +125,12 @@ def test_raises_exception_on_stop_if_no_record_exist():
 
     with pytest.raises(RuntimeError):
         tracker.stop()
+
+def test_raises_exception_if_start_is_none():
+    today = datetime.now().date()
+    workday = database.load(today)
+    if workday is not None:
+        assert database.remove(today)
+
+    with pytest.raises(ValueError):
+        tracker.track(today, None, None, None)

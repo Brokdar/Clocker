@@ -1,6 +1,7 @@
 """This module tracks the working hours"""
 
 from datetime import date, datetime, time, timedelta
+from typing import Optional
 
 from clocker import database
 from clocker.model import WorkDay
@@ -28,7 +29,7 @@ def stop():
     workday.end = now.time()
     database.store(workday)
 
-def track(day: date, begin: time, end: time, pause: timedelta):
+def track(day: date, begin: Optional[time], end: Optional[time], pause: Optional[timedelta]):
     """Add a new weekday records to the database with the given values.
 
     Args:
@@ -42,8 +43,11 @@ def track(day: date, begin: time, end: time, pause: timedelta):
     if workday is None:
         workday = WorkDay(day, begin, end, pause)
     else:
-        workday.start = begin
-        workday.end = end
-        workday.pause = pause
+        workday.start = begin or workday.start
+        workday.end = end or workday.end
+        workday.pause = pause or workday.pause
+
+    if workday.start is None:
+        raise ValueError('[Error] start time of workday cannot be None')
 
     database.store(workday)
