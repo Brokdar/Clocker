@@ -1,6 +1,6 @@
 from datetime import date, time, timedelta
 
-from clocker import tracker
+from clocker import tracker, viewer
 
 
 def main():
@@ -10,7 +10,7 @@ def main():
     tracker.track(date(2022, 1, 13), time(8,0), time(17, 00), timedelta(minutes=45))
     tracker.track(date(2022, 1, 14), time(8,0), time(15, 30), timedelta(minutes=30))
 
-    tracker.display()
+    viewer.display()
 
 if __name__ == '__main__':
     main()
