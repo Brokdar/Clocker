@@ -1,16 +1,16 @@
-from datetime import date, time, timedelta
+import click
 
-from clocker import tracker, viewer
+from clocker.cli import show, start, stop, track
 
 
-def main():
-    tracker.track(date(2022, 1, 10), time(8,0), time(16, 30), timedelta(minutes=30))
-    tracker.track(date(2022, 1, 11), time(8,0), time(17, 30), timedelta(minutes=60))
-    tracker.track(date(2022, 1, 12), time(8,0), time(17, 30), timedelta(minutes=30))
-    tracker.track(date(2022, 1, 13), time(8,0), time(17, 00), timedelta(minutes=45))
-    tracker.track(date(2022, 1, 14), time(8,0), time(15, 30), timedelta(minutes=30))
+@click.group()
+def cli():
+    pass
 
-    viewer.display()
+cli.add_command(start)
+cli.add_command(stop)
+cli.add_command(track)
+cli.add_command(show)
 
 if __name__ == '__main__':
-    main()
+    cli()
