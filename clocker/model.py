@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
+from typing import Optional
 
 
 @dataclass
@@ -9,9 +10,9 @@ class WorkDay:
     """Model for storing all relevant information about a workday."""
 
     date: date
-    start: time
-    end: time
-    pause: timedelta
+    start: Optional[time] = None
+    end: Optional[time] = None
+    pause: Optional[timedelta] = None
 
     @property
     def duration(self) -> timedelta:
@@ -21,5 +22,8 @@ class WorkDay:
             timedelta: duration = end - start - pause
         """
 
-        delta = (datetime.combine(self.date, self.end) - datetime.combine(self.date, self.start))
-        return delta if self.pause >= delta else delta - self.pause
+        if self.start is not None and self.end is not None:
+            delta = (datetime.combine(self.date, self.end) - datetime.combine(self.date, self.start))
+            return delta if self.pause >= delta else delta - self.pause
+
+        return timedelta(0)
