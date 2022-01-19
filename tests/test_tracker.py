@@ -1,5 +1,6 @@
 from datetime import datetime, time, timedelta
 
+import pytest
 from clocker import database, tracker
 
 
@@ -90,3 +91,12 @@ def test_update_pause_time():
     result = database.load(today)
     assert result
     assert result.pause == pause
+
+def test_raises_exception_on_stop_if_no_record_exist():
+    today = datetime.now().date()
+    workday = database.load(today)
+    if workday is not None:
+        assert database.remove(today)
+
+    with pytest.raises(RuntimeError):
+        tracker.stop()

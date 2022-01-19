@@ -19,8 +19,7 @@ def stop():
     now = datetime.now()
     workday = database.load(now.date())
     if workday is None:
-        # handle error state
-        return
+        raise RuntimeError('[Error] start() must be called before stop()')
 
     workday.end = now.time()
     database.store(workday)
