@@ -10,6 +10,10 @@ def start():
     """Starts tracking of working hours for the current day. Sets start time to current time"""
 
     now = datetime.now()
+    workday = database.load(now.date())
+    if workday is not None:
+        return
+
     workday = WorkDay(now.date(), now.time(), None, timedelta(minutes=30))
     database.store(workday)
 

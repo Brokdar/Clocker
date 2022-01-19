@@ -1,4 +1,5 @@
 from datetime import datetime, time, timedelta
+from time import sleep
 
 import pytest
 from clocker import database, tracker
@@ -19,6 +20,24 @@ def test_start_tracking():
     assert result.start is not None
     assert result.end is None
     assert result.pause is not None
+
+def test_start_does_not_update_already_existing_records():
+    today = datetime.now().date()
+    result = database.load(today)
+
+    if result is not None:
+        database.remove(today)
+
+    tracker.start()
+    workday = database.load(today)
+
+    sleep(3)
+    tracker.start()
+
+    result = database.load(today)
+    assert result
+    assert workday.start == result.start
+
 
 def test_stop_tracking():
     today = datetime.now().date()
