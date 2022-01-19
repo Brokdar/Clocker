@@ -1,18 +1,21 @@
 from datetime import date, time, timedelta
 
-from clocker import database
+from clocker.database import Database
 from clocker.model import WorkDay
 
 
 def test_store_and_load_workday():
+    database = Database()
     day = date(2022, 1, 10)
     workday = WorkDay(day, time(8,0), time(16, 30), timedelta(minutes=30))
+
     database.store(workday)
 
     result = database.load(day)
     assert workday == result
 
 def test_modify_stored_workday():
+    database = Database()
     day = date(2022, 1, 10)
     workday = WorkDay(day, time(8,0), time(16, 30), timedelta(minutes=30))
     database.store(workday)
@@ -27,6 +30,7 @@ def test_modify_stored_workday():
     assert workday == result
 
 def test_remove_workday():
+    database = Database()
     day = date(2022, 1, 10)
     workday = WorkDay(day, time(8,0), time(16, 30), timedelta(minutes=30))
     database.store(workday)
@@ -39,6 +43,7 @@ def test_remove_workday():
     assert result is None
 
 def test_load_month():
+    database = Database()
     database.store(WorkDay(date(2022, 1, 10), time(8,0), time(16, 30), timedelta(minutes=30)))
     database.store(WorkDay(date(2022, 1, 11), time(8,0), time(17, 30), timedelta(minutes=60)))
     database.store(WorkDay(date(2022, 1, 12), time(8,0), time(17, 30), timedelta(minutes=30)))

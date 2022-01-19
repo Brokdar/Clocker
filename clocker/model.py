@@ -12,7 +12,7 @@ class WorkDay:
     date: date
     start: Optional[time] = None
     end: Optional[time] = None
-    pause: Optional[timedelta] = timedelta(0)
+    pause: timedelta = timedelta(0)
 
     @property
     def duration(self) -> timedelta:
@@ -27,3 +27,40 @@ class WorkDay:
             return delta if self.pause >= delta else delta - self.pause
 
         return timedelta(0)
+
+def parse_date(value: str) -> date:
+    """Parses a string value to a date representation.
+
+    Args:
+        value (str): string in the format of '%d.%m.%y'
+
+    Returns:
+        date: date representation
+    """
+
+    return datetime.strptime(value, '%d.%m.%Y').date()
+
+def parse_time(value: str) -> time:
+    """Parses a string value to a time representation.
+
+    Args:
+        value (str): string in the format of '%H:%M'
+
+    Returns:
+        time: time representation
+    """
+
+    return datetime.strptime(value, '%H:%M').time()
+
+def parse_delta(value: str) -> timedelta:
+    """Parses a string value to a time delta representation.
+
+    Args:
+        value (str): string in the format of '%H:%M'
+
+    Returns:
+        timedelta: time delta representation
+    """
+
+    _time = parse_time(value)
+    return timedelta(hours=_time.hour, minutes=_time.minute)

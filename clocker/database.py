@@ -5,54 +5,57 @@ from typing import Optional
 
 from clocker.model import WorkDay
 
-data = {}
 
-def store(record: WorkDay):
-    """Stores a record of a workday into the database.
+class Database:
+    def __init__(self):
+        self.__data = {}
 
-    Args:
-        record (WorkDay): model of a workday
-    """
+    def store(self, record: WorkDay):
+        """Stores a record of a workday into the database.
 
-    data[record.date] = record
+        Args:
+            record (WorkDay): model of a workday
+        """
 
-def load(day: date) -> Optional[WorkDay]:
-    """Loads an already stored workday record from the database.
+        self.__data[record.date] = record
 
-    Args:
-        day (date): unique identifier to the workday record
+    def load(self, day: date) -> Optional[WorkDay]:
+        """Loads an already stored workday record from the database.
 
-    Returns:
-        Optional[WorkDay]: model of a workday or None if not existing
-    """
+        Args:
+            day (date): unique identifier to the workday record
 
-    return data[day] if day in data else None
+        Returns:
+            Optional[WorkDay]: model of a workday or None if not existing
+        """
 
-def remove(day: date) -> bool:
-    """Removes an already existing record from the database.
+        return self.__data[day] if day in self.__data else None
 
-    Args:
-        day (date): workday to remove
+    def remove(self, day: date) -> bool:
+        """Removes an already existing record from the database.
 
-    Returns:
-        bool: True if successful removed else False
-    """
+        Args:
+            day (date): workday to remove
 
-    if day in data:
-        del data[day]
-        return True
+        Returns:
+            bool: True if successful removed else False
+        """
 
-    return False
+        if day in self.__data:
+            del self.__data[day]
+            return True
 
-def load_month(month: int, year: int) -> list[WorkDay]:
-    """Loads all available records stored in the database for the given month and year.
+        return False
 
-    Args:
-        month (int): month of the workday records
-        year (int): year of the workday records
+    def load_month(self, month: int, year: int) -> list[WorkDay]:
+        """Loads all available records stored in the database for the given month and year.
 
-    Returns:
-        list[WorkDay]: All found records or an empty list
-    """
+        Args:
+            month (int): month of the workday records
+            year (int): year of the workday records
 
-    return [value for key, value in data.items() if key.month == month and key.year == year]
+        Returns:
+            list[WorkDay]: All found records or an empty list
+        """
+
+        return [value for key, value in self.__data.items() if key.month == month and key.year == year]

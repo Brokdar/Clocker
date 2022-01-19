@@ -1,11 +1,23 @@
 from datetime import datetime, time, timedelta
 from time import sleep
+from typing import Tuple
 
 import pytest
-from clocker import database, tracker
+from clocker.database import Database
+from clocker.settings import Settings
+from clocker.tracker import Tracker
+
+
+def setup() -> Tuple[Database, Tracker]:
+    file = 'settings.ini'
+    database = Database()
+    tracker = Tracker(Settings(file), database)
+
+    return database, tracker
 
 
 def test_start_tracking():
+    database, tracker = setup()
     today = datetime.now().date()
     result = database.load(today)
 
@@ -22,6 +34,7 @@ def test_start_tracking():
     assert result.pause is not None
 
 def test_start_does_not_update_already_existing_records():
+    database, tracker = setup()
     today = datetime.now().date()
     result = database.load(today)
 
@@ -40,6 +53,7 @@ def test_start_does_not_update_already_existing_records():
 
 
 def test_stop_tracking():
+    database, tracker = setup()
     today = datetime.now().date()
 
     tracker.start()
@@ -56,6 +70,7 @@ def test_stop_tracking():
     assert result.pause is not None
 
 def test_track_manually():
+    database, tracker = setup()
     today = datetime.now().date()
     begin = time(8,0)
     end = time(16,30)
@@ -70,6 +85,7 @@ def test_track_manually():
     assert result.pause == pause
 
 def test_update_start_time():
+    database, tracker = setup()
     today = datetime.now().date()
     begin = time(8,0)
     end = time(16,30)
@@ -86,6 +102,7 @@ def test_update_start_time():
     assert result.pause == pause
 
 def test_update_end_time():
+    database, tracker = setup()
     today = datetime.now().date()
     begin = time(8,0)
     end = time(16,30)
@@ -102,6 +119,7 @@ def test_update_end_time():
     assert result.pause == pause
 
 def test_update_pause_time():
+    database, tracker = setup()
     today = datetime.now().date()
     begin = time(8,0)
     end = time(16,30)
@@ -118,6 +136,7 @@ def test_update_pause_time():
     assert result.pause == pause
 
 def test_raises_exception_on_stop_if_no_record_exist():
+    database, tracker = setup()
     today = datetime.now().date()
     workday = database.load(today)
     if workday is not None:
@@ -127,6 +146,7 @@ def test_raises_exception_on_stop_if_no_record_exist():
         tracker.stop()
 
 def test_raises_exception_if_start_is_none():
+    database, tracker = setup()
     today = datetime.now().date()
     workday = database.load(today)
     if workday is not None:
