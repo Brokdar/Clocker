@@ -6,6 +6,7 @@ from rich.console import Console
 from rich.table import Table
 
 from clocker import database
+from clocker.model import WorkDay
 
 
 def display_day(day: date = datetime.now().date()):
@@ -15,21 +16,12 @@ def display_day(day: date = datetime.now().date()):
         day (date, optional): Date of day to be displayed. Defaults to datetime.now().date().
     """
 
-    table = Table(title=f'Working Day - {day.strftime("%a %d.%m.%Y")}')
-    table.add_column('Start')
-    table.add_column('End')
-    table.add_column('Pause')
-    table.add_column('Duration')
-
     console = Console()
+    table = _table(f'Working Day - {day.strftime("%a %d.%m.%Y")}')
+
     workday = database.load(day)
     if workday:
-        table.add_row(
-            workday.start.strftime("%H:%M:%S"),
-            workday.end.strftime("%H:%M:%S"),
-            str(workday.pause),
-            str(workday.duration)
-        )
+        table.add_row(*_convert(workday))
         console.print(table)
     else:
         console.print(f'No workday found for day: {day}')
@@ -48,22 +40,30 @@ def display_month(month: int, year: int):
         year (int): years of the records to display
     """
 
-    table = Table(title=f'Working Days - {month:02}/{year}')
+    console = Console()
+    table = _table(f'Working Days - {month:02}/{year}')
+
+    data = database.load_month(month, year)
+    for workday in data:
+        table.add_row(*_convert(workday))
+
+    console.print(table)
+
+def _convert(workday: WorkDay) -> list:
+    return [
+        workday.date.strftime("%a %d.%m.%Y"),
+        workday.start.strftime("%H:%M:%S") if workday.start is not None else None,
+        workday.end.strftime("%H:%M:%S") if workday.end is not None else None,
+        str(workday.pause),
+        str(workday.duration)
+    ]
+
+def _table(title: str):
+    table = Table(title=title)
     table.add_column('Date', style='cyan')
     table.add_column('Start')
     table.add_column('End')
     table.add_column('Pause')
     table.add_column('Duration')
 
-    data = database.load_month(month, year)
-    for workday in data:
-        table.add_row(
-            workday.date.strftime("%a %d.%m.%Y"),
-            workday.start.strftime("%H:%M:%S"),
-            workday.end.strftime("%H:%M:%S"),
-            str(workday.pause),
-            str(workday.duration)
-        )
-
-    console = Console()
-    console.print(table)
+    return table
