@@ -39,6 +39,7 @@ class Viewer:
         console = Console()
         table = _table(f'Working Days - {month:02}/{year}')
 
+        data.sort(key=lambda o: o.date)
         for workday in data:
             table.add_row(*self.__convert(workday))
 
