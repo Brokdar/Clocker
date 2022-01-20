@@ -51,6 +51,9 @@ class Tracker:
         if workday is None:
             raise RuntimeError('[Error] start() must be called before stop()')
 
+        if workday.end and now.time() < workday.end:
+            return workday
+            
         workday.end = now.replace(microsecond=0).time()
         self.__db.store(workday)
         return workday
