@@ -58,7 +58,7 @@ class Database:
             bool: True if successful removed else False
         """
 
-        self.__db.remove(where('date') == day.isoformat())
+        return bool(self.__db.remove(where('date') == day.isoformat()))
 
     def load_month(self, month: int, year: int) -> list[WorkDay]:
         """Loads all available records stored in the database for the given month and year.

@@ -53,7 +53,7 @@ class Tracker:
 
         if workday.end and now.time() < workday.end:
             return workday
-            
+
         workday.end = now.replace(microsecond=0).time()
         self.__db.store(workday)
         return workday

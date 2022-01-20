@@ -7,10 +7,12 @@ from clocker.database import Database
 from clocker.settings import Settings
 from clocker.tracker import Tracker
 
+from tests import db
+
 
 def setup() -> Tuple[Database, Tracker]:
     file = 'settings.ini'
-    database = Database()
+    database = db.get()
     tracker = Tracker(Settings(file), database)
 
     return database, tracker

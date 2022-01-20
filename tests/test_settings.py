@@ -11,7 +11,7 @@ def test_read_config():
     pause = settings.read('Workday', 'PauseTime')
     duration = settings.read('Workday', 'Duration')
 
-    assert path == r'P:\Python\Clocker\db'
+    assert path == r'db\records.json'
     assert pause == timedelta(hours=0, minutes=30)
     assert duration == timedelta(hours=8, minutes=0)
 
