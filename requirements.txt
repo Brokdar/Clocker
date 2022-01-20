@@ -3,3 +3,4 @@ pytest
 pylint
 yapf
 click
+tinydb

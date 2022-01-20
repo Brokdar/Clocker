@@ -24,12 +24,12 @@ class Tracker:
 
         now = datetime.now()
         workday = self.__db.load(now.date())
-        if workday is not None:
+        if workday:
             return workday
 
         workday = WorkDay(
             date=now.date(),
-            start=now.time(),
+            start=now.replace(microsecond=0).time(),
             pause=self.__settings.read('Workday', 'PauseTime')
         )
 
@@ -51,7 +51,7 @@ class Tracker:
         if workday is None:
             raise RuntimeError('[Error] start() must be called before stop()')
 
-        workday.end = now.time()
+        workday.end = now.replace(microsecond=0).time()
         self.__db.store(workday)
         return workday
 

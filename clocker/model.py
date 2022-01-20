@@ -1,5 +1,7 @@
 """This module contains all models used in clocker"""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from typing import Optional
@@ -27,6 +29,30 @@ class WorkDay:
             return delta if self.pause >= delta else delta - self.pause
 
         return timedelta(0)
+
+    @classmethod
+    def decode(cls, data: dict) -> WorkDay:
+        """Decodes a dictionary loaded from json file into a WorkDay object.
+
+        Args:
+            data (dict): Dictionary representation of a WorkDay model
+
+        Returns:
+            WorkDay: WorkDay instance
+        """
+
+        if not all(key in data for key in ['date', 'start', 'end', 'pause']):
+            raise KeyError(f'Not all keys are available for {data}')
+
+        day = date.fromisoformat(data['date'])
+        start = time.fromisoformat(data['start']) if data['start'] is not None else None
+        end = time.fromisoformat(data['end']) if data['end'] is not None else None
+        t_pause = time.fromisoformat(data['pause']) if data['pause'] is not None else None
+        pause = timedelta(
+            hours=t_pause.hour, minutes=t_pause.minute, seconds=t_pause.second
+        ) if t_pause is not None else timedelta(0)
+
+        return cls(day, start, end, pause)
 
 def parse_date(value: str) -> date:
     """Parses a string value to a date representation.

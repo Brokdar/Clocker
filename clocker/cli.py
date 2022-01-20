@@ -10,12 +10,13 @@ from clocker.tracker import Tracker
 from clocker.viewer import Viewer, date_to_str
 
 settings = Settings('settings.ini')
+database = Database(settings.read('Database', 'Path'))
 
 @click.command(help='Starts the time tracking for the current day')
 def start():
     """Command for starting the time tracking for the current day."""
 
-    tracker = Tracker(settings, Database())
+    tracker = Tracker(settings, database)
     viewer = Viewer(settings)
 
     workday = tracker.start()
@@ -25,7 +26,7 @@ def start():
 def stop():
     """Command for stopping the time tracking for the current day."""
 
-    tracker = Tracker(settings, Database())
+    tracker = Tracker(settings, database)
     viewer = Viewer(settings)
 
     try:
@@ -49,7 +50,7 @@ def track(date: str, start: Optional[str], end: Optional[str], pause: Optional[s
         pause (Optional[str]): Pause time of workday
     """
 
-    tracker = Tracker(settings, Database())
+    tracker = Tracker(settings, database)
     viewer = Viewer(settings)
 
     data = [
@@ -70,7 +71,6 @@ def track(date: str, start: Optional[str], end: Optional[str], pause: Optional[s
 @click.option('-m', '--month', type=int, default=datetime.now().date().month, help='Month to show, defaults to current month')
 @click.option('-y', '--year', type=int, default=datetime.now().date().year, help='Year to show, defaults to current year')
 def show(month: int, year: int):
-    database = Database()
     viewer = Viewer(settings)
 
     data = database.load_month(month, year)
