@@ -8,6 +8,15 @@ from typing import Optional
 
 
 @dataclass
+class WorkDayStatistics:
+    """Model for storing statistics about a set of WorkDays"""
+    avg_start: time = time()
+    avg_end: time = time()
+    avg_pause: timedelta = timedelta(0)
+    sum_duration: timedelta = timedelta(0)
+    sum_flextime: timedelta = timedelta(0)
+
+@dataclass
 class WorkDay:
     """Model for storing all relevant information about a workday."""
 
