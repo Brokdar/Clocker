@@ -29,7 +29,7 @@ class Tracker:
 
         workday = WorkDay(
             date=now.date(),
-            start=now.replace(microsecond=0).time(),
+            begin=now.replace(microsecond=0).time(),
             pause=self.__settings.read('Workday', 'PauseTime')
         )
 
@@ -80,11 +80,11 @@ class Tracker:
                 pause = self.__settings.read('Workday', 'PauseTime')
             workday = WorkDay(day, begin, end, pause)
         else:
-            workday.start = begin or workday.start
+            workday.begin = begin or workday.begin
             workday.end = end or workday.end
             workday.pause = pause or workday.pause
 
-        if workday.start is None:
+        if workday.begin is None:
             raise ValueError('[Error] start time of workday cannot be None')
 
         self.__db.store(workday)

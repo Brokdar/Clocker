@@ -4,7 +4,8 @@ from datetime import date, datetime, time, timedelta
 from json import JSONEncoder
 from typing import Optional
 
-from tinydb import TinyDB, where
+from tinydb import TinyDB
+from tinydb.table import Document
 
 from clocker.model import WorkDay
 
@@ -19,9 +20,15 @@ class DateTimeEncoder(JSONEncoder):
 
         return JSONEncoder.default(self, o)
 
+class WorkDayDocument(Document):
+    def __init__(self, value: WorkDay):
+        super().__init__(value.encode(), value.date)
+
 class Database:
     def __init__(self, file: str):
-        self.__db = TinyDB(file, cls=DateTimeEncoder, indent=4)
+        self.__db = TinyDB(file, cls=DateTimeEncoder, indent=4, sort_keys=True)
+        self.__table = self.__db.table('workdays')
+        self.__table.document_id_class = date.fromisoformat
 
     def store(self, record: WorkDay):
         """Stores a record of a workday into the database.
@@ -30,7 +37,10 @@ class Database:
             record (WorkDay): model of a workday
         """
 
-        self.__db.upsert(record.__dict__, where('date') == record.date.isoformat())
+        if self.load(record.date):
+            self.__table.update(WorkDayDocument(record))
+        else:
+            self.__table.insert(WorkDayDocument(record))
 
     def load(self, day: date) -> Optional[WorkDay]:
         """Loads an already stored workday record from the database.
@@ -42,7 +52,7 @@ class Database:
             Optional[WorkDay]: model of a workday or None if not existing
         """
 
-        data = self.__db.get(where('date') == day.isoformat())
+        data = self.__table.get(doc_id=day)
         if data is not None:
             return WorkDay.decode(data)
 
@@ -58,7 +68,7 @@ class Database:
             bool: True if successful removed else False
         """
 
-        return bool(self.__db.remove(where('date') == day.isoformat()))
+        return bool(self.__table.remove(doc_ids=[day]))
 
     def load_month(self, month: int, year: int) -> list[WorkDay]:
         """Loads all available records stored in the database for the given month and year.
@@ -71,6 +81,8 @@ class Database:
             list[WorkDay]: All found records or an empty list
         """
 
-        pattern = f'{year:4}-{month:02}'
-        data = self.__db.search(where('date').test(lambda d: d.startswith(pattern)))
+        data = [
+            value for value in self.__table.all()
+            if value.doc_id.month == month and value.doc_id.year == year
+        ]
         return [WorkDay.decode(item) for item in data]

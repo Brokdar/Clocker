@@ -10,7 +10,7 @@ from typing import Optional
 @dataclass
 class WorkDayStatistics:
     """Model for storing statistics about a set of WorkDays"""
-    avg_start: time = time()
+    avg_begin: time = time()
     avg_end: time = time()
     avg_pause: timedelta = timedelta(0)
     sum_duration: timedelta = timedelta(0)
@@ -21,7 +21,7 @@ class WorkDay:
     """Model for storing all relevant information about a workday."""
 
     date: date
-    start: Optional[time] = None
+    begin: Optional[time] = None
     end: Optional[time] = None
     pause: timedelta = timedelta(0)
 
@@ -33,11 +33,23 @@ class WorkDay:
             timedelta: duration = end - start - pause
         """
 
-        if self.start is not None and self.end is not None:
-            delta = (datetime.combine(self.date, self.end) - datetime.combine(self.date, self.start))
+        if self.begin is not None and self.end is not None:
+            delta = (datetime.combine(self.date, self.end) - datetime.combine(self.date, self.begin))
             return delta if self.pause >= delta else delta - self.pause
 
         return timedelta(0)
+
+    def encode(self) -> dict:
+        """Encodes a WorkDay object into a dictionary representation.
+
+        Returns:
+            dict: Dictionary instance
+        """
+
+        data = self.__dict__.copy()
+        del data['date']
+
+        return data
 
     @classmethod
     def decode(cls, data: dict) -> WorkDay:
@@ -50,18 +62,18 @@ class WorkDay:
             WorkDay: WorkDay instance
         """
 
-        if not all(key in data for key in ['date', 'start', 'end', 'pause']):
+        if not all(key in data for key in ['begin', 'end', 'pause']):
             raise KeyError(f'Not all keys are available for {data}')
 
-        day = date.fromisoformat(data['date'])
-        start = time.fromisoformat(data['start']) if data['start'] is not None else None
+        start = time.fromisoformat(data['begin']) if data['begin'] is not None else None
         end = time.fromisoformat(data['end']) if data['end'] is not None else None
         t_pause = time.fromisoformat(data['pause']) if data['pause'] is not None else None
         pause = timedelta(
             hours=t_pause.hour, minutes=t_pause.minute, seconds=t_pause.second
         ) if t_pause is not None else timedelta(0)
 
-        return cls(day, start, end, pause)
+        return cls(data.doc_id, start, end, pause)
+
 
 def parse_date(value: str) -> date:
     """Parses a string value to a date representation.

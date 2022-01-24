@@ -31,7 +31,7 @@ def test_start_tracking():
     result = database.load(today)
     assert result
     assert result.date == today
-    assert result.start is not None
+    assert result.begin is not None
     assert result.end is None
     assert result.pause is not None
 
@@ -51,7 +51,7 @@ def test_start_does_not_update_already_existing_records():
 
     result = database.load(today)
     assert result
-    assert workday.start == result.start
+    assert workday.begin == result.begin
 
 
 def test_stop_tracking():
@@ -67,7 +67,7 @@ def test_stop_tracking():
     result = database.load(today)
     assert result
     assert result.date == today
-    assert result.start is not None
+    assert result.begin is not None
     assert result.end is not None
     assert result.pause is not None
 
@@ -82,7 +82,7 @@ def test_track_manually():
     result = database.load(today)
     assert result
     assert result.date == today
-    assert result.start == begin
+    assert result.begin == begin
     assert result.end == end
     assert result.pause == pause
 
@@ -99,7 +99,7 @@ def test_update_start_time():
 
     result = database.load(today)
     assert result
-    assert result.start == begin
+    assert result.begin == begin
     assert result.end == end
     assert result.pause == pause
 
@@ -116,7 +116,7 @@ def test_update_end_time():
 
     result = database.load(today)
     assert result
-    assert result.start == begin
+    assert result.begin == begin
     assert result.end == end
     assert result.pause == pause
 
@@ -133,7 +133,7 @@ def test_update_pause_time():
 
     result = database.load(today)
     assert result
-    assert result.start == begin
+    assert result.begin == begin
     assert result.end == end
     assert result.pause == pause
 

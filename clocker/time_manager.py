@@ -21,14 +21,16 @@ class TimeManager:
         Returns:
             WorkDayStatistics: Statistical information about the list of WorkDay
         """
-        
+
         statistics = WorkDayStatistics()
+        if not data:
+            return statistics
 
         avg_start = timedelta(0)
         avg_end = timedelta(0)
 
         for day in data:
-            avg_start = _add(avg_start, day.start)
+            avg_start = _add(avg_start, day.begin)
             avg_end = _add(avg_end, day.end)
             statistics.avg_pause += day.pause
             statistics.sum_duration += day.duration
@@ -38,7 +40,7 @@ class TimeManager:
         avg_end = avg_end / len(data)
         statistics.avg_pause /= len(data)
 
-        statistics.avg_start = (datetime.min + avg_start).time()
+        statistics.avg_begin = (datetime.min + avg_start).time()
         statistics.avg_end = (datetime.min + avg_end).time()
 
         return statistics

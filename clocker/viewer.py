@@ -12,7 +12,7 @@ from clocker.time_manager import TimeManager
 
 class Viewer:
     """Viewer class for displaying a single WorkDay or a set of WorkDays"""
-    
+
     def __init__(self, settings: Settings):
         self.__time_manager = TimeManager(settings)
 
@@ -50,7 +50,7 @@ class Viewer:
     def __convert(self, workday: WorkDay) -> list:
         return [
             date_to_str(workday.date),
-            time_to_str(workday.start) if workday.start is not None else None,
+            time_to_str(workday.begin) if workday.begin is not None else None,
             time_to_str(workday.end) if workday.end is not None else None,
             delta_to_str(workday.pause),
             delta_to_str(workday.duration),
@@ -58,7 +58,7 @@ class Viewer:
         ]
 
 def _display_statistics(console: Console, statistics: WorkDayStatistics):
-    console.print(f"On average you began to work at [bold]{statistics.avg_start}[/] and left at [bold]{statistics.avg_end}[/]")
+    console.print(f"On average you began to work at [bold]{statistics.avg_begin}[/] and left at [bold]{statistics.avg_end}[/]")
     console.print(f"You have worked a total of [bold]{delta_to_str(statistics.sum_duration)}[/], which is {'more' if statistics.sum_flextime > timedelta(0) else 'less'} [bold]{delta_to_str(statistics.sum_flextime)}[/] than you're target")
 
 def _table(title: str, statistics: WorkDayStatistics = None):
@@ -71,7 +71,7 @@ def _table(title: str, statistics: WorkDayStatistics = None):
     table.add_column('Flextime', justify='right')
 
     if statistics:
-        table.columns[1].footer = time_to_str(statistics.avg_start)
+        table.columns[1].footer = time_to_str(statistics.avg_begin)
         table.columns[2].footer = time_to_str(statistics.avg_end)
         table.columns[3].footer = delta_to_str(statistics.avg_pause)
         table.columns[4].footer = delta_to_str(statistics.sum_duration)
