@@ -3,9 +3,9 @@ from time import sleep
 from typing import Tuple
 
 import pytest
+from clocker.core import Tracker
 from clocker.database import Database
 from clocker.settings import Settings
-from clocker.tracker import Tracker
 
 from tests import db
 

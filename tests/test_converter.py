@@ -1,5 +1,4 @@
 from datetime import date, time, timedelta
-from math import exp
 from typing import Any
 
 import pytest

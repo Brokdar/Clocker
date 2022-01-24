@@ -3,11 +3,11 @@ from typing import Optional
 
 import click
 
+from clocker import converter
+from clocker.core import Tracker
 from clocker.database import Database
-from clocker.model import parse_date, parse_delta, parse_time
 from clocker.settings import Settings
-from clocker.tracker import Tracker
-from clocker.viewer import Viewer, date_to_str
+from clocker.viewer import Viewer
 
 settings = Settings('settings.ini')
 database = Database(settings.read('Database', 'Path'))
@@ -33,7 +33,7 @@ def stop():
         workday = tracker.stop()
         viewer.display(workday)
     except RuntimeError:
-        print(f"[Error] command start wasn't called for today: {date_to_str(datetime.now().date())}")
+        print(f"[Error] command start wasn't called for today: {converter.date_to_str(datetime.now().date())}")
 
 @click.command(help='Manual tracking of workdays. Can also be used to update values of already tracked days')
 @click.option('-d', '--date', required=True, type=str, help='Date of workday in format: dd.mm.yyyy')
@@ -54,17 +54,17 @@ def track(date: str, start: Optional[str], end: Optional[str], pause: Optional[s
     viewer = Viewer(settings)
 
     data = [
-        parse_date(date),
-        parse_time(start) if start is not None else None,
-        parse_time(end) if end is not None else None,
-        parse_delta(pause) if pause is not None else None
+        converter.str_to_date(date),
+        converter.str_to_time(start) if start is not None else None,
+        converter.str_to_time(end) if end is not None else None,
+        converter.str_to_delta(pause) if pause is not None else None
     ]
 
     try:
         workday = tracker.track(*data)
         viewer.display(workday)
     except ValueError:
-        print(f"[Error] start must be set for workday: {date_to_str(workday.date)}")
+        print(f"[Error] start must be set for workday: {converter.date_to_str(workday.date)}")
 
 
 @click.command(help='Displays all tracked workdays of the given month and year')
