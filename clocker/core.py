@@ -27,10 +27,14 @@ class Tracker:
         if workday:
             return workday
 
+        if self.__settings.read('Behavior', 'RoundToQuarter'):
+            begin = round_prev_quarter(now.time())
+        else:
+            begin = now.replace(microsecond=0).time()
+
         workday = WorkDay(
             date=now.date(),
-            begin=now.replace(microsecond=0).time(),
-            pause=self.__settings.read('Workday', 'PauseTime')
+            begin=begin
         )
 
         self.__db.store(workday)
@@ -54,7 +58,17 @@ class Tracker:
         if workday.end and now.time() < workday.end:
             return workday
 
-        workday.end = now.replace(microsecond=0).time()
+        if self.__settings.read('Behavior', 'RoundToQuarter'):
+            end = round_next_quarter(now.time())
+        else:
+            end = now.replace(microsecond=0).time()
+
+        workday.end = end
+        if workday.duration > timedelta(hours=6):
+            pause = self.__settings.read('Workday', 'PauseTime')
+            if pause:
+                workday.pause = pause
+
         self.__db.store(workday)
         return workday
 
@@ -144,3 +158,35 @@ class TimeManager:
         """
 
         return data.duration - self.__settings.read('Workday', 'Duration')
+
+def round_prev_quarter(value: time):
+    """Rounds the time to the previous quarter.
+
+    Args:
+        value (time): Time that should be rounded
+
+    Returns:
+        [type]: Rounded time to the previous quarter
+    """
+
+    minutes = 15 * (value.minute // 15)
+    return time(value.hour, minutes)
+
+def round_next_quarter(value: time):
+    """Rounds the time to the next quarter.
+
+    Args:
+        value (time): Time that should be rounded
+
+    Returns:
+        [type]: Rounded time to the next quarter
+    """
+
+    hours = value.hour
+    minutes = 15 * ((value.minute + 15) // 15)
+
+    if minutes == 60:
+        minutes = 0
+        hours = hours + 1 if hours != 23 else 0
+
+    return time(hours, minutes)
