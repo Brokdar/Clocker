@@ -37,15 +37,15 @@ def stop():
 
 @click.command(help='Manual tracking of workdays. Can also be used to update values of already tracked days')
 @click.option('-d', '--date', required=True, type=str, help='Date of workday in format: dd.mm.yyyy')
-@click.option('-s', '--start', type=str, default=None, help='Start time of workday in format: hh:mm')
-@click.option('-e', '--end', type=str, default=None, help='End time of workday in format: hh:mm')
-@click.option('-p', '--pause', type=str, default=None, help='Pause time on workday in format: hh:mm')
-def track(date: str, start: Optional[str], end: Optional[str], pause: Optional[str]):
+@click.option('-b', '--begin', type=str, default=None, help='Start time of workday in format: hh:mm[:ss]')
+@click.option('-e', '--end', type=str, default=None, help='End time of workday in format: hh:mm[:ss]')
+@click.option('-p', '--pause', type=str, default=None, help='Pause time on workday in format: hh:mm[:ss]')
+def track(date: str, begin: Optional[str], end: Optional[str], pause: Optional[str]):
     """Command for manual tracking time for a given workday.
 
     Args:
         date (str): Date of the workday
-        start (Optional[str]): Start time of workday
+        begin (Optional[str]): Start time of workday
         end (Optional[str]): End time of workday
         pause (Optional[str]): Pause time of workday
     """
@@ -55,7 +55,7 @@ def track(date: str, start: Optional[str], end: Optional[str], pause: Optional[s
 
     data = [
         converter.str_to_date(date),
-        converter.str_to_time(start) if start is not None else None,
+        converter.str_to_time(begin) if begin is not None else None,
         converter.str_to_time(end) if end is not None else None,
         converter.str_to_delta(pause) if pause is not None else None
     ]

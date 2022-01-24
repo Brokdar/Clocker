@@ -6,9 +6,9 @@ from rich.console import Console
 from rich.table import Table
 
 from clocker import converter
+from clocker.core import TimeManager
 from clocker.model import WorkDay, WorkDayStatistics
 from clocker.settings import Settings
-from clocker.time_manager import TimeManager
 
 
 class Viewer:
@@ -60,7 +60,11 @@ class Viewer:
 
 def _display_statistics(console: Console, statistics: WorkDayStatistics):
     console.print(f"On average, you started at [bold]{statistics.avg_begin}[/] and worked until [bold]{statistics.avg_end}[/]")
-    console.print(f"You have worked a total of [bold]{converter.delta_to_str(statistics.sum_duration)}[/], which is {'more' if statistics.sum_flextime > timedelta(0) else 'less'} [bold]{converter.delta_to_str(statistics.sum_flextime)}[/] than you're target")
+    console.print(
+        f"You have worked a total of [bold]{converter.delta_to_str(statistics.sum_duration)}[/], \
+        which is {'more [green ' if statistics.sum_flextime > timedelta(0) else 'less [red '} \
+        bold]{converter.delta_to_str(statistics.sum_flextime)}[/] than you're target"
+    )
 
 def _table(title: str, statistics: WorkDayStatistics = None):
     table = Table(title=title)
