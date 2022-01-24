@@ -2,9 +2,9 @@ import configparser
 import errno
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-from clocker.model import parse_delta
+from clocker import converter
 
 
 class Settings:
@@ -25,25 +25,8 @@ class Settings:
         Returns:
             Any: returns the configuration value if found else None
         """
-        
+
         if section in self.config and key in self.config[section]:
-            return _convert(self.config[section][key])
+            return converter.str_to_value(self.config[section][key])
 
         return None
-
-
-def _convert(value: Optional[str]) -> Any:
-    if value is None:
-        return None
-
-    try:
-        if value in ['true', 'false']:
-            return value == 'true'
-
-        if ':' in value:
-            return parse_delta(value)
-
-        return value
-
-    except ValueError:
-        return value
