@@ -4,7 +4,7 @@ from datetime import date, datetime, time, timedelta
 from typing import Optional
 
 from clocker.database import Database
-from clocker.model import WorkDay, WorkDayStatistics
+from clocker.model import Statistics, WorkDay
 from clocker.settings import Settings
 
 
@@ -97,7 +97,7 @@ class TimeManager:
     def __init__(self, settings: Settings):
         self.__settings = settings
 
-    def statistics(self, data: list[WorkDay]) -> WorkDayStatistics:
+    def statistics(self, data: list[WorkDay]) -> Statistics:
         """Evaluates statistics of a given list of WorkDay objects
 
         Args:
@@ -110,7 +110,7 @@ class TimeManager:
         def add(_delta: timedelta, _time: time) -> timedelta:
             return _delta + timedelta(hours=_time.hour, minutes=_time.minute, seconds=_time.second)
 
-        statistics = WorkDayStatistics()
+        statistics = Statistics()
         if not data:
             return statistics
 

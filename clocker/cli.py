@@ -1,3 +1,5 @@
+"""Command Line Interface of Clocker"""
+
 from datetime import datetime
 from typing import Optional
 
@@ -71,6 +73,13 @@ def track(date: str, begin: Optional[str], end: Optional[str], pause: Optional[s
 @click.option('-m', '--month', type=int, default=datetime.now().date().month, help='Month to show, defaults to current month')
 @click.option('-y', '--year', type=int, default=datetime.now().date().year, help='Year to show, defaults to current year')
 def show(month: int, year: int):
+    """Command for showing all workdays of the given month and year.
+
+    Args:
+        month (int): Month to display
+        year (int): Year to display
+    """
+
     viewer = Viewer(settings)
 
     data = database.load_month(month, year)

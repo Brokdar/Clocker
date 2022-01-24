@@ -8,7 +8,7 @@ from typing import Optional
 
 
 @dataclass
-class WorkDayStatistics:
+class Statistics:
     """Model for storing statistics about a set of WorkDays"""
     avg_begin: time = time()
     avg_end: time = time()
@@ -34,7 +34,7 @@ class WorkDay:
         """
 
         if self.begin is not None and self.end is not None:
-            delta = (datetime.combine(self.date, self.end) - datetime.combine(self.date, self.begin))
+            delta = datetime.combine(self.date, self.end) - datetime.combine(self.date, self.begin)
             return delta if self.pause >= delta else delta - self.pause
 
         return timedelta(0)

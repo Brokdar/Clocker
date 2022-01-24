@@ -1,3 +1,5 @@
+"""Module for reading configuration settings."""
+
 import configparser
 import errno
 import os
@@ -8,6 +10,8 @@ from clocker import converter
 
 
 class Settings:
+    """Class for reading single configuration parameter"""
+
     def __init__(self, file: str):
         if not Path.exists(Path(file)):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), file)

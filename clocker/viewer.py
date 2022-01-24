@@ -7,7 +7,7 @@ from rich.table import Table
 
 from clocker import converter
 from clocker.core import TimeManager
-from clocker.model import WorkDay, WorkDayStatistics
+from clocker.model import WorkDay
 from clocker.settings import Settings
 
 
@@ -46,7 +46,7 @@ class Viewer:
             table.add_row(*self.__convert(workday))
 
         console.print(table)
-        _display_statistics(console, self.__time_manager.statistics(data))
+        self.__display_statistics(console, data)
 
     def __convert(self, workday: WorkDay) -> list:
         return [
@@ -58,15 +58,17 @@ class Viewer:
             converter.delta_to_str(self.__time_manager.flextime(workday))
         ]
 
-def _display_statistics(console: Console, statistics: WorkDayStatistics):
-    console.print(f"On average, you started at [bold]{statistics.avg_begin}[/] and worked until [bold]{statistics.avg_end}[/]")
-    console.print(
-        f"You have worked a total of [bold]{converter.delta_to_str(statistics.sum_duration)}[/], \
-        which is {'more [green ' if statistics.sum_flextime > timedelta(0) else 'less [red '} \
-        bold]{converter.delta_to_str(statistics.sum_flextime)}[/] than you're target"
-    )
+    def __display_statistics(self, console: Console, data: list[WorkDay]):
+        statistics = self.__time_manager.statistics(data)
 
-def _table(title: str, statistics: WorkDayStatistics = None):
+        console.print(f"On average, you started at [bold]{statistics.avg_begin}[/] and worked until [bold]{statistics.avg_end}[/]")
+        console.print(
+            f"You have worked a total of [bold]{converter.delta_to_str(statistics.sum_duration)}[/], \
+which is {'more [green ' if statistics.sum_flextime >= timedelta(0) else 'less [red '} \
+bold]{converter.delta_to_str(statistics.sum_flextime)}[/] than you're target"
+        )
+
+def _table(title: str):
     table = Table(title=title)
     table.add_column('Date', style='cyan')
     table.add_column('Start')
@@ -74,12 +76,5 @@ def _table(title: str, statistics: WorkDayStatistics = None):
     table.add_column('Pause')
     table.add_column('Duration')
     table.add_column('Flextime', justify='right')
-
-    if statistics:
-        table.columns[1].footer = converter.time_to_str(statistics.avg_begin)
-        table.columns[2].footer = converter.time_to_str(statistics.avg_end)
-        table.columns[3].footer = converter.delta_to_str(statistics.avg_pause)
-        table.columns[4].footer = converter.delta_to_str(statistics.sum_duration)
-        table.columns[5].footer = converter.delta_to_str(statistics.sum_flextime)
 
     return table
