@@ -90,13 +90,14 @@ class Tracker:
 
         workday = self.__db.load(day)
         if workday is None:
-            if pause is None:
-                pause = self.__settings.read('Workday', 'PauseTime')
-            workday = WorkDay(day, begin, end, pause)
-        else:
-            workday.begin = begin or workday.begin
-            workday.end = end or workday.end
-            workday.pause = pause or workday.pause
+            workday = WorkDay(day)
+
+        workday.begin = begin or workday.begin
+        workday.end = end or workday.end
+        workday.pause = pause or workday.pause
+
+        if workday.pause == timedelta(0) and workday.end is not None and workday.duration > timedelta(hours=6):
+            workday.pause = self.__settings.read('Workday', 'PauseTime')
 
         if workday.begin is None:
             raise ValueError('[Error] start time of workday cannot be None')
