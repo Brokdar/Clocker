@@ -61,7 +61,7 @@ class Viewer:
     def __display_statistics(self, console: Console, data: list[WorkDay]):
         statistics = self.__time_manager.statistics(data)
 
-        console.print(f"On average, you started at [bold]{statistics.avg_begin}[/] and worked until [bold]{statistics.avg_end}[/]")
+        console.print(f"On average, you started at [bold]{converter.time_to_str(statistics.avg_begin)}[/] and worked until [bold]{converter.time_to_str(statistics.avg_end)}[/]")
         console.print(
             f"You have worked a total of [bold]{converter.delta_to_str(statistics.sum_duration)}[/], \
 which is {'more [green ' if statistics.sum_flextime >= timedelta(0) else 'less [red '} \
