@@ -52,7 +52,7 @@ class Database:
         """
 
         if self.load(record.date):
-            self.__table.update(WorkDayDocument(record))
+            self.__table.update(WorkDayDocument(record), doc_ids=[record.date])
         else:
             self.__table.insert(WorkDayDocument(record))
 
