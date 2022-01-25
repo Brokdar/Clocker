@@ -122,7 +122,9 @@ class TimeManager:
         """
 
         def add(_delta: timedelta, _time: time) -> timedelta:
-            return _delta + timedelta(hours=_time.hour, minutes=_time.minute, seconds=_time.second)
+            if _time:
+                return _delta + timedelta(hours=_time.hour, minutes=_time.minute, seconds=_time.second)
+            return _delta
 
         statistics = Statistics()
         if not data:
