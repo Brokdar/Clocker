@@ -25,6 +25,9 @@ class WorkDay:
     end: Optional[time] = None
     pause: timedelta = timedelta(0)
 
+    def __str__(self) -> str:
+        return f'Workday(date={self.date}, begin={self.begin}, end={self.end}, pause={self.pause})'
+
     @property
     def duration(self) -> timedelta:
         """The duration is total hours worked at this day.
