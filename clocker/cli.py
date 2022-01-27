@@ -1,5 +1,6 @@
 """Command Line Interface of Clocker"""
 
+import logging
 from datetime import datetime
 from typing import Optional
 
@@ -14,6 +15,12 @@ from clocker.viewer import Viewer
 settings = Settings('settings.ini')
 database = Database(settings.read('Database', 'Path'))
 
+
+def error(msg: str):
+    print(f'[Error] {msg}')
+    logging.error(msg)
+
+
 @click.command(help='Starts the time tracking for the current day')
 def start():
     """Command for starting the time tracking for the current day."""
@@ -23,6 +30,7 @@ def start():
 
     workday = tracker.start()
     viewer.display(workday)
+
 
 @click.command(help='Stops the time tracking for the current day')
 def stop():
@@ -35,7 +43,8 @@ def stop():
         workday = tracker.stop()
         viewer.display(workday)
     except RuntimeError:
-        print(f"[Error] command start wasn't called for today: {converter.date_to_str(datetime.now().date())}")
+        error(f"Start command wasn't called before stop command: {converter.date_to_str(datetime.now().date())}")
+
 
 @click.command(help='Manual tracking of workdays. Can also be used to update values of already tracked days')
 @click.option('-d', '--date', required=True, type=str, help='Date of workday in format: dd.mm.yyyy')
@@ -66,7 +75,7 @@ def track(date: str, begin: Optional[str], end: Optional[str], pause: Optional[s
         workday = tracker.track(*data)
         viewer.display(workday)
     except ValueError:
-        print(f"[Error] start must be set for workday: {converter.date_to_str(workday.date)}")
+        error(f"Start time must be set for workday: {converter.date_to_str(workday.date)}")
 
 
 @click.command(help='Displays all tracked workdays of the given month and year')

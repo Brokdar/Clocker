@@ -1,5 +1,6 @@
 """This module tracks the working hours"""
 
+import logging
 from datetime import date, datetime, time, timedelta
 from typing import Optional
 
@@ -25,19 +26,20 @@ class Tracker:
         now = datetime.now()
         workday = self.__db.load(now.date())
         if workday:
+            logging.debug('Start (%s) - already present in database', now.date())
             return workday
 
         if self.__settings.read('Behavior', 'RoundToQuarter'):
             begin = round_prev_quarter(now.time())
+            logging.debug('Start (%s) - round to previous quarter (%s -> %s)', now.date(), now.time(), begin)
         else:
             begin = now.replace(microsecond=0).time()
 
-        workday = WorkDay(
-            date=now.date(),
-            begin=begin
-        )
+        workday = WorkDay(date=now.date(), begin=begin)
 
         self.__db.store(workday)
+        logging.info('Start (%s) - start tracking %s', workday.date, workday)
+
         return workday
 
     def stop(self) -> WorkDay:
@@ -55,21 +57,30 @@ class Tracker:
         if workday is None:
             raise RuntimeError('[Error] start() must be called before stop()')
 
-        if workday.end and now.time() < workday.end:
-            return workday
-
         if self.__settings.read('Behavior', 'RoundToQuarter'):
             end = round_next_quarter(now.time())
+            logging.debug('Stop (%s) - round to next quarter (%s -> %s)', workday.date, now.time(), end)
         else:
             end = now.replace(microsecond=0).time()
 
-        workday.end = end
-        if workday.duration > timedelta(hours=6):
-            pause = self.__settings.read('Workday', 'PauseTime')
-            if pause:
-                workday.pause = pause
+        updated = False
+        if workday.end:
+            if end < workday.end:
+                logging.debug('Stop (%s) - current time is before tracked time (%s < %s)', workday.date, end, workday.end)
+                return workday
 
+            updated = True
+            old_end = workday.end
+
+        workday.end = end
+        self.__set_pause(workday)
         self.__db.store(workday)
+
+        if updated:
+            logging.debug('Stop (%s) - update end time (%s -> %s)', workday.date, old_end, end)
+        else:
+            logging.info('Stop (%s) - stop tracking %s', now.date(), workday)
+
         return workday
 
     def track(self, day: date, begin: Optional[time], end: Optional[time], pause: Optional[timedelta]) -> WorkDay:
@@ -91,19 +102,38 @@ class Tracker:
         workday = self.__db.load(day)
         if workday is None:
             workday = WorkDay(day)
+            logging.info('Track (%s) - create new workday', workday.date)
+        else:
+            logging.info('Track (%s) - update %s', workday.date, workday)
 
         workday.begin = begin or workday.begin
         workday.end = end or workday.end
         workday.pause = pause or workday.pause
 
-        if workday.pause == timedelta(0) and workday.end is not None and workday.duration > timedelta(hours=6):
-            workday.pause = self.__settings.read('Workday', 'PauseTime')
+        if workday.pause == timedelta(0):
+            self.__set_pause(workday)
 
         if workday.begin is None:
             raise ValueError('[Error] start time of workday cannot be None')
 
         self.__db.store(workday)
+        logging.info('Track (%s) - set %s', workday.date, workday)
+
         return workday
+
+    def __set_pause(self, workday: WorkDay):
+        if workday.pause == timedelta(0) and workday.end is not None:
+            if workday.duration > timedelta(hours=6):
+                pause = self.__settings.read('Workday', 'PauseTime')
+                if pause:
+                    workday.pause = pause
+                    logging.debug('Stop (%s) - set pause time from settings to %s', workday.date, pause)
+                else:
+                    logging.warning("Stop (%s) - no 'PauseTime' configured in settings", workday.date)
+            else:
+                logging.debug('Stop (%s) - no pause time set because duration is less than 6 hours', workday.date)
+        else:
+            logging.debug('Stop (%s) - no end time set therefore no pause time applied', workday.date)
 
 
 class TimeManager:
@@ -162,7 +192,8 @@ class TimeManager:
 
         return data.duration - self.__settings.read('Workday', 'Duration')
 
-def round_prev_quarter(value: time):
+
+def round_prev_quarter(value: time) -> time:
     """Rounds the time to the previous quarter.
 
     Args:
@@ -175,7 +206,8 @@ def round_prev_quarter(value: time):
     minutes = 15 * (value.minute // 15)
     return time(value.hour, minutes)
 
-def round_next_quarter(value: time):
+
+def round_next_quarter(value: time) -> time:
     """Rounds the time to the next quarter.
 
     Args:
