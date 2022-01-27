@@ -26,7 +26,7 @@ class Tracker:
         now = datetime.now()
         workday = self.__db.load(now.date())
         if workday:
-            logging.debug('Start (%s) - already present in database', now.date())
+            logging.info('Start (%s) - already present in database', now.date())
             return workday
 
         if self.__settings.read('Behavior', 'RoundToQuarter'):
@@ -65,8 +65,8 @@ class Tracker:
 
         updated = False
         if workday.end:
-            if end < workday.end:
-                logging.debug('Stop (%s) - current time is before tracked time (%s < %s)', workday.date, end, workday.end)
+            if end <= workday.end:
+                logging.info('Stop (%s) - current time is before tracked time (%s <= %s)', workday.date, end, workday.end)
                 return workday
 
             updated = True
@@ -77,7 +77,7 @@ class Tracker:
         self.__db.store(workday)
 
         if updated:
-            logging.debug('Stop (%s) - update end time (%s -> %s)', workday.date, old_end, end)
+            logging.info('Stop (%s) - update end time (%s -> %s)', workday.date, old_end, end)
         else:
             logging.info('Stop (%s) - stop tracking %s', now.date(), workday)
 
@@ -122,7 +122,10 @@ class Tracker:
         return workday
 
     def __set_pause(self, workday: WorkDay):
-        if workday.pause == timedelta(0) and workday.end is not None:
+        if workday.pause > timedelta(0):
+            return
+
+        if workday.end is not None:
             if workday.duration > timedelta(hours=6):
                 pause = self.__settings.read('Workday', 'PauseTime')
                 if pause:

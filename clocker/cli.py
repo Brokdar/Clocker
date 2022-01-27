@@ -46,7 +46,7 @@ def stop():
         error(f"Start command wasn't called before stop command: {converter.date_to_str(datetime.now().date())}")
 
 
-@click.command(help='Manual tracking of workdays. Can also be used to update values of already tracked days')
+@click.command(help='Manual tracking of workdays, can be used to update values')
 @click.option('-d', '--date', required=True, type=str, help='Date of workday in format: dd.mm.yyyy')
 @click.option('-b', '--begin', type=str, default=None, help='Start time of workday in format: hh:mm[:ss]')
 @click.option('-e', '--end', type=str, default=None, help='End time of workday in format: hh:mm[:ss]')
