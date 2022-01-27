@@ -26,6 +26,7 @@ class DateTimeEncoder(JSONEncoder):
 
         return JSONEncoder.default(self, o)
 
+
 class WorkDayDocument(Document):
     """Custom Document for TinyDB tables.
 
@@ -35,6 +36,7 @@ class WorkDayDocument(Document):
 
     def __init__(self, value: WorkDay):
         super().__init__(value.encode(), value.date)
+
 
 class Database:
     """Class for handling JSON database file"""
@@ -100,4 +102,5 @@ class Database:
             # value.doc_id is overridden by date object, type hints will show it as int
             if value.doc_id.month == month and value.doc_id.year == year
         ]
+
         return [WorkDay.decode(item) for item in data]

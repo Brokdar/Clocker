@@ -2,10 +2,14 @@
     "python.pythonPath": ".venv\\Scripts\\python.exe",
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
+    "python.linting.pylintArgs": [
+        "--max-line-length",
+        "128"
+    ],
     "python.formatting.provider": "yapf",
     "python.formatting.yapfArgs": [
         "--style",
-        "{based_on_style: chromium, indent_width: 4, column_limit: 100}"
+        "{based_on_style: google, indent_width: 4, column_limit: 128}"
     ],
     "python.testing.pytestArgs": [
         "tests"

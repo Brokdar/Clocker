@@ -16,6 +16,7 @@ def date_to_str(value: date) -> str:
 
     return value.strftime("%a %d.%m.%Y")
 
+
 def time_to_str(value: time) -> str:
     """Returns the string representation of a given time.
 
@@ -27,6 +28,7 @@ def time_to_str(value: time) -> str:
     """
 
     return value.strftime("%H:%M:%S")
+
 
 def delta_to_str(value: timedelta) -> str:
     """Returns the string representation of a given timedelta.
@@ -50,6 +52,7 @@ def delta_to_str(value: timedelta) -> str:
         return '-' + convert(-value)
     return convert(value)
 
+
 def str_to_date(value: str) -> date:
     """Parses a string value to a date representation.
 
@@ -61,6 +64,7 @@ def str_to_date(value: str) -> date:
     """
 
     return datetime.strptime(value, '%d.%m.%Y').date()
+
 
 def str_to_time(value: str) -> time:
     """Parses a string value to a time representation.
@@ -76,6 +80,7 @@ def str_to_time(value: str) -> time:
         return datetime.strptime(value, '%H:%M:%S').time()
     return datetime.strptime(value, '%H:%M').time()
 
+
 def str_to_delta(value: str) -> timedelta:
     """Parses a string value to a time delta representation.
 
@@ -88,6 +93,7 @@ def str_to_delta(value: str) -> timedelta:
 
     _time = str_to_time(value)
     return timedelta(hours=_time.hour, minutes=_time.minute, seconds=_time.second)
+
 
 def str_to_value(value: str) -> Any:
     """Converts a string to any value.
