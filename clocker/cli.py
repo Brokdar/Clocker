@@ -17,6 +17,12 @@ database = Database(settings.read('Database', 'Path'))
 
 
 def error(msg: str):
+    """Utility function for printing an error message and also logging it
+
+    Args:
+        msg (str): Error message
+    """
+
     print(f'[Error] {msg}')
     logging.error(msg)
 
@@ -76,6 +82,23 @@ def track(date: str, begin: Optional[str], end: Optional[str], pause: Optional[s
         viewer.display(workday)
     except ValueError:
         error(f"Start time must be set for workday: {converter.date_to_str(workday.date)}")
+
+
+@click.command(help='Remove a workday from database')
+@click.option('-d', '--date', required=True, type=str, help='Date of workday in format: dd.mm.yyyy')
+def remove(date: str):
+    """Command for removing a workday from the database
+
+    Args:
+        date (str): Date of the workday
+    """
+
+    tracker = Tracker(settings, database)
+
+    try:
+        tracker.remove(converter.str_to_date(date))
+    except ValueError:
+        error(f'Workday({date}) could not be removed from database')
 
 
 @click.command(help='Displays all tracked workdays of the given month and year')

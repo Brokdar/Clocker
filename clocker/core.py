@@ -138,6 +138,26 @@ class Tracker:
         else:
             logging.debug('Stop (%s) - no end time set therefore no pause time applied', workday.date)
 
+    def remove(self, day: date):
+        """Remove a WorkDay from the database
+
+        Args:
+            day (date): Date of WorkDay
+
+        Raises:
+            ValueError: Unexpected error while remove the WorkDay from the database
+        """
+
+        workday = self.__db.load(day)
+        if workday is None:
+            logging.info('Remove (%s) - no workday found', day)
+            return
+
+        if self.__db.remove(day):
+            logging.info('Remove (%s) - removed %s', day, workday)
+        else:
+            raise ValueError(f'[Error] removing workday({day}) from database')
+
 
 class TimeManager:
     """Class for managing the work time data"""

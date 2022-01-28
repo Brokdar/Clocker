@@ -31,10 +31,21 @@
                 "track",
                 "--date",
                 "01.01.2022",
-                "--start",
+                "--begin",
                 "08:00",
                 "--end",
                 "17:00"
+            ]
+        },
+        {
+            "name": "Python: Modul - remove",
+            "type": "python",
+            "request": "launch",
+            "module": "clocker",
+            "args": [
+                "remove",
+                "--date",
+                "01.01.2022"
             ]
         },
         {
