@@ -165,17 +165,25 @@ def test_raises_exception_if_start_is_none():
         tracker.track(today, None, None, None)
 
 
-@pytest.mark.parametrize("value,expected", [(time(8, 44, 32), time(8, 30)), (time(8, 11, 23), time(8, 0)),
-                                            (time(17, 37, 23), time(17, 30))])
+# 8:30 -> 8:30
+# 8:40 -> 8:30
+# 8:41 -> 8:45
+# 8:45 -> 8:45
+@pytest.mark.parametrize("value,expected", [(time(8, 30), time(8, 30)), (time(8, 40, 59), time(8, 30)),
+                                            (time(8, 41), time(8, 45)), (time(8, 44, 59), time(8, 45))])
 def test_round_prev_quarter(value: time, expected: time):
     result = round_prev_quarter(value)
 
     assert result == expected
 
 
-@pytest.mark.parametrize("value,expected", [(time(8, 44, 32), time(8, 45)), (time(8, 11, 23), time(8, 15)),
-                                            (time(17, 37, 23), time(17, 45)), (time(23, 50), time(0, 0)),
-                                            (time(7, 56, 48), time(8, 0))])
+# 8:30 -> 8:30
+# 8:35 -> 8:30
+# 8:36 -> 8:45
+# 8:45 -> 8:45
+@pytest.mark.parametrize("value,expected", [(time(8, 30), time(8, 30)), (time(8, 35, 59), time(8, 30)),
+                                            (time(8, 36), time(8, 45)), (time(8, 44, 59), time(8, 45)),
+                                            (time(23, 56, 48), time(0, 0))])
 def test_round_next_quarter(value: time, expected: time):
     result = round_next_quarter(value)
 
