@@ -11,7 +11,7 @@ from tests import db
 
 
 def setup() -> Tuple[Database, Tracker]:
-    file = 'settings.ini'
+    file = 'tests/settings.ini'
     database = db.get()
     tracker = Tracker(Settings(file), database)
 

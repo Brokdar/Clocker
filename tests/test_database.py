@@ -5,6 +5,15 @@ from clocker.model import WorkDay
 from tests import db
 
 
+def test_create_database_if_not_exists():
+    database = db.get()
+    day = date(2022, 1, 10)
+    workday = WorkDay(day, time(8, 0), time(16, 30), timedelta(minutes=30))
+
+    database.store(workday)
+    assert db.exists()
+
+
 def test_store_and_load_workday():
     database = db.get()
     day = date(2022, 1, 10)

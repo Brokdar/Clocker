@@ -2,10 +2,11 @@
 
 from datetime import date, datetime, time, timedelta
 from json import JSONEncoder
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Union
 
 from tinydb import TinyDB
-from tinydb.table import Document
+from tinydb.table import Document, Table
 
 from clocker.model import WorkDay
 
@@ -41,10 +42,30 @@ class WorkDayDocument(Document):
 class Database:
     """Class for handling JSON database file"""
 
-    def __init__(self, file: str):
-        self.__db = TinyDB(file, cls=DateTimeEncoder, indent=4, sort_keys=True)
-        self.__table = self.__db.table('workdays')
-        self.__table.document_id_class = date.fromisoformat
+    def __init__(self, directory: Union[Path, str]):
+        if isinstance(directory, str):
+            self.__dir = Path(directory)
+        elif isinstance(directory, Path):
+            self.__dir = directory
+        else:
+            raise TypeError(f'[Error] directory is not of type Path or string: {directory}[{type(directory)}]')
+
+        if not self.__dir.exists():
+            self.__dir.mkdir(parents=True, exist_ok=True)
+
+        self.__tables = {}
+
+    def __table(self, year: int) -> Table:
+        if year in self.__tables:
+            return self.__tables[year]
+
+        file = self.__dir.joinpath(f'{year}.json')
+        table = TinyDB(file.as_posix(), cls=DateTimeEncoder, indent=4, sort_keys=True).table('workdays')
+        table.document_id_class = date.fromisoformat
+
+        self.__tables[year] = table
+
+        return table
 
     def store(self, record: WorkDay):
         """Stores a record of a workday into the database.
@@ -53,10 +74,12 @@ class Database:
             record (WorkDay): model of a workday
         """
 
+        table = self.__table(record.date.year)
+
         if self.load(record.date):
-            self.__table.update(WorkDayDocument(record), doc_ids=[record.date])
+            table.update(WorkDayDocument(record), doc_ids=[record.date])
         else:
-            self.__table.insert(WorkDayDocument(record))
+            table.insert(WorkDayDocument(record))
 
     def load(self, day: date) -> Optional[WorkDay]:
         """Loads an already stored workday record from the database.
@@ -68,7 +91,7 @@ class Database:
             Optional[WorkDay]: model of a workday or None if not existing
         """
 
-        data = self.__table.get(doc_id=day)
+        data = self.__table(day.year).get(doc_id=day)
         if data is not None:
             return WorkDay.decode(data)
 
@@ -84,7 +107,7 @@ class Database:
             bool: True if successful removed else False
         """
 
-        return bool(self.__table.remove(doc_ids=[day]))
+        return bool(self.__table(day.year).remove(doc_ids=[day]))
 
     def load_month(self, month: int, year: int) -> list[WorkDay]:
         """Loads all available records stored in the database for the given month and year.
@@ -98,7 +121,7 @@ class Database:
         """
 
         data = [
-            value for value in self.__table.all()
+            value for value in self.__table(year).all()
             # value.doc_id is overridden by date object, type hints will show it as int
             if value.doc_id.month == month and value.doc_id.year == year
         ]

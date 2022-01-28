@@ -5,13 +5,13 @@ from clocker.settings import Settings
 
 
 def test_read_config():
-    settings = Settings('settings.ini')
+    settings = Settings('tests/settings.ini')
 
     path = settings.read('Database', 'Path')
     pause = settings.read('Workday', 'PauseTime')
     duration = settings.read('Workday', 'Duration')
 
-    assert path == r'db\records.json'
+    assert path == r'db'
     assert pause == timedelta(hours=0, minutes=30)
     assert duration == timedelta(hours=8, minutes=0)
 
