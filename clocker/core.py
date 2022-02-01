@@ -239,7 +239,14 @@ class TimeManager:
 
 
 def round_prev_quarter(value: time) -> time:
-    """Rounds the time to the previous quarter.
+    """Rounds the current time to the previous quarter of an hour.
+
+    The time is rounded when the current minutes are no more than 10 minutes from the previous quarter of an hour.
+    Otherwise, it is rounded up to the nearest quarter of an hour.
+
+    - current time = 8:30, rounded = 8:30
+    - current time = 8:40, rounded = 8:30
+    - current time = 8:41, rounded = 8:45
 
     Args:
         value (time): Time that should be rounded
@@ -248,18 +255,18 @@ def round_prev_quarter(value: time) -> time:
         [type]: Rounded time to the previous quarter
     """
 
-    quarter = 15
-    remainder = value.minute % quarter
-    if remainder > 10:
-        minutes = _round(value.minute + quarter, quarter)
-    else:
-        minutes = _round(value.minute, quarter)
-
-    return time(value.hour, minutes)
+    return _round_quarter(value, 10)
 
 
 def round_next_quarter(value: time) -> time:
-    """Rounds the time to the next quarter.
+    """Rounds the current time to the next quarter of an hour.
+
+    The time is rounded when the current minutes are no more than 10 minutes from the next quarter of an hour.
+    Otherwise, it is rounded up to the nearest quarter of an hour.
+
+    - current time = 8:30, rounded = 8:30
+    - current time = 8:35, rounded = 8:30
+    - current time = 8:36, rounded = 8:45
 
     Args:
         value (time): Time that should be rounded
@@ -268,20 +275,24 @@ def round_next_quarter(value: time) -> time:
         [type]: Rounded time to the next quarter
     """
 
+    return _round_quarter(value, 5)
+
+
+def _round_quarter(value: time, threshold: int) -> time:
     quarter = 15
     remainder = value.minute % quarter
-    if remainder > 5:
-        minutes = _round(value.minute + quarter, quarter)
-    else:
-        minutes = _round(value.minute, quarter)
 
-    hours = value.hour
+    minutes = _round(value.minute + quarter, quarter) if remainder > threshold else _round(value.minute, quarter)
+    return _advance_time(value.hour, minutes)
+
+
+def _round(value: int, resolution: int) -> int:
+    return resolution * (value // resolution)
+
+
+def _advance_time(hours: int, minutes: int) -> time:
     if minutes == 60:
         minutes = 0
         hours = hours + 1 if hours != 23 else 0
 
     return time(hours, minutes)
-
-
-def _round(value: int, resolution: int) -> int:
-    return resolution * (value // resolution)

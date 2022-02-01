@@ -170,7 +170,8 @@ def test_raises_exception_if_start_is_none():
 # 8:41 -> 8:45
 # 8:45 -> 8:45
 @pytest.mark.parametrize("value,expected", [(time(8, 30), time(8, 30)), (time(8, 40, 59), time(8, 30)),
-                                            (time(8, 41), time(8, 45)), (time(8, 44, 59), time(8, 45))])
+                                            (time(8, 41), time(8, 45)), (time(8, 44, 59), time(8, 45)),
+                                            (time(19, 56), time(20, 00))])
 def test_round_prev_quarter(value: time, expected: time):
     result = round_prev_quarter(value)
 
