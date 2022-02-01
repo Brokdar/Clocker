@@ -8,10 +8,10 @@ from typing import Optional, Union
 from tinydb import TinyDB
 from tinydb.table import Document, Table
 
-from clocker.model import WorkDay
+from clocker.model import AbsenceType, WorkDay
 
 
-class DateTimeEncoder(JSONEncoder):
+class WorkDayEncoder(JSONEncoder):
     """JSONEncoder for handling datetime objects.
 
     Args:
@@ -24,6 +24,9 @@ class DateTimeEncoder(JSONEncoder):
 
         if isinstance(o, timedelta):
             return (datetime.min + o).time().isoformat()
+
+        if isinstance(o, AbsenceType):
+            return o.value
 
         return JSONEncoder.default(self, o)
 
@@ -60,7 +63,7 @@ class Database:
             return self.__tables[year]
 
         file = self.__dir.joinpath(f'{year}.json')
-        table = TinyDB(file.as_posix(), cls=DateTimeEncoder, indent=4, sort_keys=True).table('workdays')
+        table = TinyDB(file.as_posix(), cls=WorkDayEncoder, indent=4, sort_keys=True).table('workdays')
         table.document_id_class = date.fromisoformat
 
         self.__tables[year] = table

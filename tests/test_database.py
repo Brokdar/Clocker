@@ -8,7 +8,7 @@ from tests import db
 def test_create_database_if_not_exists():
     database = db.get()
     day = date(2022, 1, 10)
-    workday = WorkDay(day, time(8, 0), time(16, 30), timedelta(minutes=30))
+    workday = WorkDay(day, begin=time(8, 0), end=time(16, 30), pause=timedelta(minutes=30))
 
     database.store(workday)
     assert db.exists()
@@ -17,7 +17,7 @@ def test_create_database_if_not_exists():
 def test_store_and_load_workday():
     database = db.get()
     day = date(2022, 1, 10)
-    workday = WorkDay(day, time(8, 0), time(16, 30), timedelta(minutes=30))
+    workday = WorkDay(day, begin=time(8, 0), end=time(16, 30), pause=timedelta(minutes=30))
 
     database.store(workday)
 
@@ -28,7 +28,7 @@ def test_store_and_load_workday():
 def test_modify_stored_workday():
     database = db.get()
     day = date(2022, 1, 10)
-    workday = WorkDay(day, time(8, 0), time(16, 30), timedelta(minutes=30))
+    workday = WorkDay(day, begin=time(8, 0), end=time(16, 30), pause=timedelta(minutes=30))
     database.store(workday)
 
     result = database.load(day)
@@ -44,7 +44,7 @@ def test_modify_stored_workday():
 def test_remove_workday():
     database = db.get()
     day = date(2022, 1, 10)
-    workday = WorkDay(day, time(8, 0), time(16, 30), timedelta(minutes=30))
+    workday = WorkDay(day, begin=time(8, 0), end=time(16, 30), pause=timedelta(minutes=30))
     database.store(workday)
 
     result = database.load(day)
@@ -57,11 +57,11 @@ def test_remove_workday():
 
 def test_load_month():
     database = db.get()
-    database.store(WorkDay(date(2022, 1, 10), time(8, 0), time(16, 30), timedelta(minutes=30)))
-    database.store(WorkDay(date(2022, 1, 11), time(8, 0), time(17, 30), timedelta(minutes=60)))
-    database.store(WorkDay(date(2022, 1, 12), time(8, 0), time(17, 30), timedelta(minutes=30)))
-    database.store(WorkDay(date(2022, 1, 13), time(8, 0), time(17, 00), timedelta(minutes=45)))
-    database.store(WorkDay(date(2022, 1, 14), time(8, 0), time(15, 30), timedelta(minutes=30)))
+    database.store(WorkDay(date(2022, 1, 10), begin=time(8, 0), end=time(16, 30), pause=timedelta(minutes=30)))
+    database.store(WorkDay(date(2022, 1, 11), begin=time(8, 0), end=time(17, 30), pause=timedelta(minutes=60)))
+    database.store(WorkDay(date(2022, 1, 12), begin=time(8, 0), end=time(17, 30), pause=timedelta(minutes=30)))
+    database.store(WorkDay(date(2022, 1, 13), begin=time(8, 0), end=time(17, 00), pause=timedelta(minutes=45)))
+    database.store(WorkDay(date(2022, 1, 14), begin=time(8, 0), end=time(15, 30), pause=timedelta(minutes=30)))
 
     result = database.load_month(1, 2022)
     assert result

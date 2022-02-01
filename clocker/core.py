@@ -5,7 +5,7 @@ from datetime import date, datetime, time, timedelta
 from typing import Optional
 
 from clocker.database import Database
-from clocker.model import Statistics, WorkDay
+from clocker.model import AbsenceType, Statistics, WorkDay
 from clocker.settings import Settings
 
 
@@ -55,7 +55,7 @@ class Tracker:
         now = datetime.now()
         workday = self.__db.load(now.date())
         if workday is None:
-            raise RuntimeError('[Error] start() must be called before stop()')
+            raise RuntimeError(f'start() must be called before stop() for workday({now.date()})')
 
         if self.__settings.read('Behavior', 'RoundToQuarter'):
             end = round_next_quarter(now.time())
@@ -114,7 +114,7 @@ class Tracker:
             self.__set_pause(workday)
 
         if workday.begin is None:
-            raise ValueError('[Error] start time of workday cannot be None')
+            raise ValueError('start time of workday cannot be None')
 
         self.__db.store(workday)
         logging.info('Track (%s) - set %s', workday.date, workday)
@@ -156,7 +156,29 @@ class Tracker:
         if self.__db.remove(day):
             logging.info('Remove (%s) - removed %s', day, workday)
         else:
-            raise ValueError(f'[Error] removing workday({day}) from database')
+            raise ValueError(f'failed removing workday({day}) from database')
+
+    def notify(self, day: date, absence_type: AbsenceType) -> WorkDay:
+        """Notify about an absence day
+
+        Args:
+            day (date): Date of the absence day
+            absence_type (AbsenceType): Absence Type
+
+        Returns:
+            WorkDay: workday model with absence type set
+        """
+
+        workday = self.__db.load(day)
+        if workday is not None:
+            logging.info('Notify (%s) - overriding %s', day, workday)
+
+        workday = WorkDay(day, absence=absence_type)
+        self.__db.store(workday)
+
+        logging.info('Notify (%s) - absence %s', day, workday.absence)
+
+        return workday
 
 
 class TimeManager:

@@ -9,6 +9,7 @@ import click
 from clocker import converter
 from clocker.core import Tracker
 from clocker.database import Database
+from clocker.model import AbsenceType
 from clocker.settings import Settings
 from clocker.viewer import Viewer
 
@@ -80,8 +81,8 @@ def track(date: str, begin: Optional[str], end: Optional[str], pause: Optional[s
     try:
         workday = tracker.track(*data)
         viewer.display(workday)
-    except ValueError:
-        error(f"Start time must be set for workday: {converter.date_to_str(workday.date)}")
+    except ValueError as err:
+        error(err)
 
 
 @click.command(help='Remove a workday from database')
@@ -97,8 +98,8 @@ def remove(date: str):
 
     try:
         tracker.remove(converter.str_to_date(date))
-    except ValueError:
-        error(f'Workday({date}) could not be removed from database')
+    except ValueError as err:
+        error(err)
 
 
 @click.command(help='Displays all tracked workdays of the given month and year')
@@ -116,3 +117,25 @@ def show(month: int, year: int):
 
     data = database.load_month(month, year)
     viewer.display_month(month, year, data)
+
+
+@click.command(help='Notifies about an absence day')
+@click.option('-d', '--date', required=True, type=str, help='Date of workday in format: dd.mm.yyyy')
+@click.option('-a', '--absence', required=True, type=str, help='Absence type: W=Workday, V=Vacation, F=Flexday, S=Sickness')
+def notify(date: str, absence: str):
+    """Command for notifying about an absence day.
+
+    Args:
+        date (str): Date of absence day
+        absence (int): Type of absence day
+    """
+
+    tracker = Tracker(settings, database)
+    viewer = Viewer(settings)
+
+    try:
+        absence_type = AbsenceType.from_abbreviation(absence)
+        workday = tracker.notify(converter.str_to_date(date), absence_type)
+        viewer.display(workday)
+    except ValueError as err:
+        error(err)

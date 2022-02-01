@@ -3,6 +3,8 @@
 from datetime import date, datetime, time, timedelta
 from typing import Any
 
+from clocker.model import AbsenceType
+
 
 def date_to_str(value: date) -> str:
     """Returns the string representation of a given date.
@@ -123,3 +125,29 @@ def str_to_value(value: str) -> Any:
 
     except ValueError:
         return value
+
+
+def enum_to_abbreviation(value: AbsenceType) -> str:
+    """Converts an AbsenceType to an abbreviation string.
+
+    Args:
+        value (AbsenceType): Absence type
+
+    Raises:
+        Exception: Conversion exception
+
+    Returns:
+        str: Abbreviation of the absence type
+    """
+
+    match value:
+        case AbsenceType.WORKDAY:
+            return 'W'
+        case AbsenceType.VACATION:
+            return 'V'
+        case AbsenceType.FLEXDAY:
+            return 'F'
+        case AbsenceType.SICKNESS:
+            return 'S'
+        case _:
+            raise ValueError(f'Invalid AbsenceType cannot be converted to abbreviation: {value}')

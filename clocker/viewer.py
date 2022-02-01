@@ -64,8 +64,12 @@ class Viewer:
         self.__display_statistics(data)
 
     def __convert(self, workday: WorkDay) -> list:
+        if workday.is_absence_day():
+            return [converter.date_to_str(workday.date), converter.enum_to_abbreviation(workday.absence)]
+
         return [
             converter.date_to_str(workday.date),
+            converter.enum_to_abbreviation(workday.absence),
             converter.time_to_str(workday.begin) if workday.begin is not None else None,
             converter.time_to_str(workday.end) if workday.end is not None else None,
             converter.delta_to_str(workday.pause),
@@ -76,17 +80,21 @@ class Viewer:
     def __display_statistics(self, data: list[WorkDay]):
         statistics = self.__time_manager.statistics(data)
 
-        self.__console.print(
-            f"On average, you started at [bold]{converter.time_to_str(statistics.avg_begin)}[/] and worked until [bold]{converter.time_to_str(statistics.avg_end)}[/]"
-        )
-        self.__console.print(f"You have worked a total of [bold]{converter.delta_to_str(statistics.sum_duration)}[/], \
-which is {'more [green ' if statistics.sum_flextime >= timedelta(0) else 'less [red '} \
-bold]{converter.delta_to_str(statistics.sum_flextime)}[/] than you're target")
+        self.__console.print(' '.join([
+            f'On average, you started at [bold]{converter.time_to_str(statistics.avg_begin)}[/]',
+            f'and worked until [bold]{converter.time_to_str(statistics.avg_end)}[/]'
+        ]))
+        self.__console.print(''.join([
+            f'You have worked a total of [bold]{converter.delta_to_str(statistics.sum_duration)}[/],',
+            f"which is {'more [green ' if statistics.sum_flextime >= timedelta(0) else 'less [red '}",
+            f"bold]{converter.delta_to_str(statistics.sum_flextime)}[/] than you're target"
+        ]))
 
 
 def _table(title: str):
     table = Table(title=title)
     table.add_column('Date')
+    table.add_column('Type', justify='center')
     table.add_column('Start')
     table.add_column('End')
     table.add_column('Pause')
