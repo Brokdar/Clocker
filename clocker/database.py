@@ -130,3 +130,17 @@ class Database:
         ]
 
         return [WorkDay.decode(item) for item in data]
+
+    def all_until(self, end: date):
+        """Loads all available records of end.year stored in the database up until end date.
+
+        Args:
+            end (date): end date up until the data should be received
+
+        Returns:
+            [type]: All stored records of end.year up until end date
+        """
+
+        data = [value for value in self.__table(end.year).all() if value.doc_id <= end]
+
+        return [WorkDay.decode(item) for item in data]

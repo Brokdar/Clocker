@@ -115,8 +115,14 @@ def show(month: int, year: int):
 
     viewer = Viewer(settings)
 
-    data = database.load_month(month, year)
-    viewer.display_month(month, year, data)
+    monthly_data = database.load_month(month, year)
+    viewer.display_month(month, year, monthly_data)
+
+    data = []
+    if monthly_data:
+        data = database.all_until(monthly_data[-1].date)
+
+    viewer.display_statistics(data)
 
 
 @click.command(help='Notifies about an absence day')

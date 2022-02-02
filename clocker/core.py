@@ -5,7 +5,7 @@ from datetime import date, datetime, time, timedelta
 from typing import Optional
 
 from clocker.database import Database
-from clocker.model import AbsenceType, Statistics, WorkDay
+from clocker.model import AbsenceType, WorkDay
 from clocker.settings import Settings
 
 
@@ -127,7 +127,7 @@ class Tracker:
 
         if workday.end is not None:
             if workday.duration > timedelta(hours=6):
-                pause = self.__settings.read('Workday', 'PauseTime')
+                pause = self.__settings.read('Work', 'DefaultPauseTime')
                 if pause:
                     workday.pause = pause
                     logging.debug('Stop (%s) - set pause time from settings to %s', workday.date, pause)
@@ -179,63 +179,6 @@ class Tracker:
         logging.info('Notify (%s) - absence %s', day, workday.absence)
 
         return workday
-
-
-class TimeManager:
-    """Class for managing the work time data"""
-
-    def __init__(self, settings: Settings):
-        self.__settings = settings
-
-    def statistics(self, data: list[WorkDay]) -> Statistics:
-        """Evaluates statistics of a given list of WorkDay objects
-
-        Args:
-            data (list[WorkDay]): list of WorkDay objects
-
-        Returns:
-            WorkDayStatistics: Statistical information about the list of WorkDay
-        """
-
-        def add(_delta: timedelta, _time: time) -> timedelta:
-            if _time:
-                return _delta + timedelta(hours=_time.hour, minutes=_time.minute, seconds=_time.second)
-            return _delta
-
-        statistics = Statistics()
-        if not data:
-            return statistics
-
-        avg_start = timedelta(0)
-        avg_end = timedelta(0)
-
-        for day in data:
-            avg_start = add(avg_start, day.begin)
-            avg_end = add(avg_end, day.end)
-            statistics.avg_pause += day.pause
-            statistics.sum_duration += day.duration
-            statistics.sum_flextime += self.flextime(day)
-
-        avg_start = avg_start / len(data)
-        avg_end = avg_end / len(data)
-        statistics.avg_pause /= len(data)
-
-        statistics.avg_begin = (datetime.min + avg_start).time()
-        statistics.avg_end = (datetime.min + avg_end).time()
-
-        return statistics
-
-    def flextime(self, data: WorkDay) -> timedelta:
-        """Calculates the flextime for the given day
-
-        Args:
-            data (WorkDay): day for which the flextime should be calculated
-
-        Returns:
-            timedelta: flextime
-        """
-
-        return data.duration - self.__settings.read('Workday', 'Duration')
 
 
 def round_prev_quarter(value: time) -> time:

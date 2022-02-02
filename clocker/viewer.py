@@ -1,23 +1,22 @@
 """This module is responsible for a visual representation of the model data"""
 
 from calendar import Calendar
-from datetime import timedelta
 
 from rich.console import Console
 from rich.style import Style
 from rich.table import Table
 
 from clocker import converter
-from clocker.core import TimeManager
 from clocker.model import WorkDay
 from clocker.settings import Settings
+from clocker.statistics import StatisticHandler
 
 
 class Viewer:
     """Viewer class for displaying a single WorkDay or a set of WorkDays"""
 
     def __init__(self, settings: Settings):
-        self.__time_manager = TimeManager(settings)
+        self.__stats = StatisticHandler(settings)
         self.__console = Console()
 
     def display(self, day: WorkDay):
@@ -61,7 +60,23 @@ class Viewer:
                 table.add_row(converter.date_to_str(day), style=style)
 
         self.__console.print(table)
-        self.__display_statistics(data)
+
+    def display_statistics(self, data: list[WorkDay]):
+        """Displays a statistic object
+
+        Args:
+            data (list[WorkDay]): data set to be analyzed
+        """
+
+        statistics = self.__stats.collect(data)
+
+        self.__console.print(' | '.join([
+            f'Vacation {statistics.count.vacation}/{statistics.accessable_vacation_days} ({statistics.accessable_vacation_days - statistics.count.vacation})',
+            f'Flexday {statistics.count.flex}', f'Sickness {statistics.count.sick}'
+        ]))
+        self.__console.print(
+            f'Flextime {converter.delta_to_str(statistics.working_hours)}/{converter.delta_to_str(statistics.target_working_hours)} ({self.__colorize(converter.delta_to_str(statistics.flextime))})'
+        )
 
     def __convert(self, workday: WorkDay) -> list:
         if workday.is_absence_day():
@@ -74,21 +89,12 @@ class Viewer:
             converter.time_to_str(workday.end) if workday.end is not None else None,
             converter.delta_to_str(workday.pause),
             converter.delta_to_str(workday.duration),
-            converter.delta_to_str(self.__time_manager.flextime(workday))
+            converter.delta_to_str(self.__stats.flextime(workday))
         ]
 
-    def __display_statistics(self, data: list[WorkDay]):
-        statistics = self.__time_manager.statistics(data)
-
-        self.__console.print(' '.join([
-            f'On average, you started at [bold]{converter.time_to_str(statistics.avg_begin)}[/]',
-            f'and worked until [bold]{converter.time_to_str(statistics.avg_end)}[/]'
-        ]))
-        self.__console.print(''.join([
-            f'You have worked a total of [bold]{converter.delta_to_str(statistics.sum_duration)}[/],',
-            f"which is {'more [green ' if statistics.sum_flextime >= timedelta(0) else 'less [red '}",
-            f"bold]{converter.delta_to_str(statistics.sum_flextime)}[/] than you're target"
-        ]))
+    @staticmethod
+    def __colorize(value: str) -> str:
+        return f'[red]{value}[/]' if value.startswith('-') else f'[green]{value}[/]'
 
 
 def _table(title: str):

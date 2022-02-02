@@ -8,12 +8,14 @@ def test_read_config():
     settings = Settings('tests/settings.ini')
 
     path = settings.read('Database', 'Path')
-    pause = settings.read('Workday', 'PauseTime')
-    duration = settings.read('Workday', 'Duration')
+    pause = settings.read('Work', 'DefaultPauseTime')
+    duration = settings.read('Work', 'WorkingHours')
+    vacation_days = settings.read('Work', 'VacationDays')
 
     assert path == r'db'
-    assert pause == timedelta(hours=0, minutes=30)
+    assert pause == timedelta(hours=1)
     assert duration == timedelta(hours=8, minutes=0)
+    assert vacation_days == 30
 
 
 def test_returns_none_if_not_found():

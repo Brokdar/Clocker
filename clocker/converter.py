@@ -121,6 +121,9 @@ def str_to_value(value: str) -> Any:
         if ':' in value:
             return str_to_delta(value)
 
+        if value.isdigit():
+            return int(value)
+
         return value
 
     except ValueError:
