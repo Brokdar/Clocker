@@ -7,7 +7,7 @@ from typing import Optional
 import click
 
 from clocker import converter
-from clocker.core import Tracker
+from clocker.core import SettingsError, Tracker
 from clocker.database import Database
 from clocker.model import AbsenceType
 from clocker.settings import Settings
@@ -18,7 +18,7 @@ database = Database(settings.read('Database', 'Path'))
 
 
 def error(msg: str):
-    """Utility function for printing an error message and also logging it
+    """Utility function for printing an error message and also log it
 
     Args:
         msg (str): Error message
@@ -28,6 +28,17 @@ def error(msg: str):
     logging.error(msg)
 
 
+def warning(msg: str):
+    """Utility function for print an warning message and also log it
+
+    Args:
+        msg (str): Warning message
+    """
+
+    print(f'[Warning] {msg}')
+    logging.warning(msg)
+
+
 @click.command(help='Starts the time tracking for the current day')
 def start():
     """Command for starting the time tracking for the current day."""
@@ -35,8 +46,11 @@ def start():
     tracker = Tracker(settings, database)
     viewer = Viewer(settings)
 
-    workday = tracker.start()
-    viewer.display(workday)
+    try:
+        workday = tracker.start()
+        viewer.display(workday)
+    except SettingsError as err:
+        warning(err)
 
 
 @click.command(help='Stops the time tracking for the current day')
@@ -49,8 +63,10 @@ def stop():
     try:
         workday = tracker.stop()
         viewer.display(workday)
-    except RuntimeError:
-        error(f"Start command wasn't called before stop command: {converter.date_to_str(datetime.now().date())}")
+    except RuntimeError as err:
+        error(err)
+    except SettingsError as err:
+        warning(err)
 
 
 @click.command(help='Manual tracking of workdays, can be used to update values')

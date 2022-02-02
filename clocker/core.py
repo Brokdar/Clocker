@@ -9,6 +9,10 @@ from clocker.model import AbsenceType, WorkDay
 from clocker.settings import Settings
 
 
+class SettingsError(Exception):
+    pass
+
+
 class Tracker:
     """Class to track the work time."""
 
@@ -24,21 +28,27 @@ class Tracker:
         """
 
         now = datetime.now()
+        if self._disallowed_tracking_on_sundays(now.date()):
+            raise SettingsError(f'start ({now.date()}) - auto tracking is disabled on sundays')
+
         workday = self.__db.load(now.date())
         if workday:
-            logging.info('Start (%s) - already present in database', now.date())
+            if self._disallowed_tracking_on_holidays(workday):
+                raise SettingsError(f'start({workday.date}) - auto tracking is disabled on holidays')
+
+            logging.info('start (%s) - workday is already present in database', now.date())
             return workday
 
         if self.__settings.read('Behavior', 'RoundToQuarter'):
             begin = round_prev_quarter(now.time())
-            logging.debug('Start (%s) - round to previous quarter (%s -> %s)', now.date(), now.time(), begin)
+            logging.debug('start (%s) - round to previous quarter (%s -> %s)', now.date(), now.time(), begin)
         else:
             begin = now.replace(microsecond=0).time()
 
         workday = WorkDay(date=now.date(), begin=begin)
 
         self.__db.store(workday)
-        logging.info('Start (%s) - start tracking %s', workday.date, workday)
+        logging.info('start (%s) - start tracking %s', workday.date, workday)
 
         return workday
 
@@ -53,20 +63,26 @@ class Tracker:
         """
 
         now = datetime.now()
+        if self._disallowed_tracking_on_sundays(now.date()):
+            raise SettingsError(f'stop ({now.date()}) - auto tracking is disabled on sundays')
+
         workday = self.__db.load(now.date())
         if workday is None:
-            raise RuntimeError(f'start() must be called before stop() for workday({now.date()})')
+            raise RuntimeError(f"stop ({now.date()}) - 'start' must be called before 'stop'")
+
+        if self._disallowed_tracking_on_holidays(workday):
+            raise SettingsError(f'stop ({workday.date}) - auto tracking is disabled on holidays')
 
         if self.__settings.read('Behavior', 'RoundToQuarter'):
             end = round_next_quarter(now.time())
-            logging.debug('Stop (%s) - round to next quarter (%s -> %s)', workday.date, now.time(), end)
+            logging.debug('stop (%s) - round to next quarter (%s -> %s)', workday.date, now.time(), end)
         else:
             end = now.replace(microsecond=0).time()
 
         updated = False
         if workday.end:
             if end <= workday.end:
-                logging.info('Stop (%s) - current time is before tracked time (%s <= %s)', workday.date, end, workday.end)
+                logging.info('stop (%s) - time is less or equal to tracked time (%s <= %s)', workday.date, end, workday.end)
                 return workday
 
             updated = True
@@ -77,11 +93,17 @@ class Tracker:
         self.__db.store(workday)
 
         if updated:
-            logging.info('Stop (%s) - update end time (%s -> %s)', workday.date, old_end, end)
+            logging.info('stop (%s) - update end time (%s -> %s)', workday.date, old_end, end)
         else:
-            logging.info('Stop (%s) - stop tracking %s', now.date(), workday)
+            logging.info('stop (%s) - stop tracking %s', now.date(), workday)
 
         return workday
+
+    def _disallowed_tracking_on_sundays(self, day: date) -> bool:
+        return day.weekday() == 6 and self.__settings.read('Behavior', 'DisableAutoTrackingOnSundays')
+
+    def _disallowed_tracking_on_holidays(self, workday: WorkDay) -> bool:
+        return workday.absence == AbsenceType.HOLIDAY and self.__settings.read('Behavior', 'DisableAutoTrackingOnHolidays')
 
     def track(self, day: date, begin: Optional[time], end: Optional[time], pause: Optional[timedelta]) -> WorkDay:
         """Add a new weekday records to the database with the given values.
@@ -102,9 +124,9 @@ class Tracker:
         workday = self.__db.load(day)
         if workday is None:
             workday = WorkDay(day)
-            logging.info('Track (%s) - create new workday', workday.date)
+            logging.info('track (%s) - create new workday', workday.date)
         else:
-            logging.info('Track (%s) - update %s', workday.date, workday)
+            logging.info('track (%s) - update %s', workday.date, workday)
 
         workday.begin = begin or workday.begin
         workday.end = end or workday.end
@@ -114,10 +136,10 @@ class Tracker:
             self.__set_pause(workday)
 
         if workday.begin is None:
-            raise ValueError('start time of workday cannot be None')
+            raise ValueError(f'track ({workday.date}) - begin value is None')
 
         self.__db.store(workday)
-        logging.info('Track (%s) - set %s', workday.date, workday)
+        logging.info('track (%s) - set %s', workday.date, workday)
 
         return workday
 
@@ -130,13 +152,13 @@ class Tracker:
                 pause = self.__settings.read('Work', 'DefaultPauseTime')
                 if pause:
                     workday.pause = pause
-                    logging.debug('Stop (%s) - set pause time from settings to %s', workday.date, pause)
+                    logging.debug('pause (%s) - apply default pause time from settings: %s', workday.date, pause)
                 else:
-                    logging.warning("Stop (%s) - no 'PauseTime' configured in settings", workday.date)
+                    logging.warning("pause (%s) - no 'DefaultPauseTime' is configured in settings", workday.date)
             else:
-                logging.debug('Stop (%s) - no pause time set because duration is less than 6 hours', workday.date)
+                logging.debug('pause (%s) - no pause time set because duration is less than 6 hours', workday.date)
         else:
-            logging.debug('Stop (%s) - no end time set therefore no pause time applied', workday.date)
+            logging.debug('pause (%s) - no pause time set because was end time not provided', workday.date)
 
     def remove(self, day: date):
         """Remove a WorkDay from the database
@@ -150,11 +172,11 @@ class Tracker:
 
         workday = self.__db.load(day)
         if workday is None:
-            logging.info('Remove (%s) - no workday found', day)
+            logging.info('remove (%s) - no workday found', day)
             return
 
         if self.__db.remove(day):
-            logging.info('Remove (%s) - removed %s', day, workday)
+            logging.info('remove (%s) - removed %s', day, workday)
         else:
             raise ValueError(f'failed removing workday({day}) from database')
 
@@ -171,12 +193,12 @@ class Tracker:
 
         workday = self.__db.load(day)
         if workday is not None:
-            logging.info('Notify (%s) - overriding %s', day, workday)
+            logging.info('notify (%s) - overriding %s', day, workday)
 
         workday = WorkDay(day, absence=absence_type)
         self.__db.store(workday)
 
-        logging.info('Notify (%s) - absence %s', day, workday.absence)
+        logging.info('notify (%s) - absence %s', day, workday.absence)
 
         return workday
 
