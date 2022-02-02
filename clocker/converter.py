@@ -152,5 +152,7 @@ def enum_to_abbreviation(value: AbsenceType) -> str:
             return 'F'
         case AbsenceType.SICKNESS:
             return 'S'
+        case AbsenceType.HOLIDAY:
+            return 'H'
         case _:
             raise ValueError(f'Invalid AbsenceType cannot be converted to abbreviation: {value}')

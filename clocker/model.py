@@ -15,13 +15,14 @@ class AbsenceType(Enum):
     VACATION = 1
     FLEXDAY = 2
     SICKNESS = 3
+    HOLIDAY = 4
 
     @staticmethod
     def from_abbreviation(abbr: str) -> AbsenceType:
         """Converts abbreviation to AbsenceType
 
         Args:
-            abbr (str): Abbreviation string [W,F,V,S]
+            abbr (str): Abbreviation string [W,F,V,S,H]
 
         Raises:
             ValueError: invalid abbreviation string
@@ -39,6 +40,8 @@ class AbsenceType(Enum):
                 return AbsenceType.FLEXDAY
             case 'S':
                 return AbsenceType.SICKNESS
+            case 'H':
+                return AbsenceType.HOLIDAY
             case _:
                 raise ValueError(f'invalid abbreviation string: {abbr}')
 
@@ -55,7 +58,7 @@ class WorkDay:
 
     def __str__(self) -> str:
         if self.absence != AbsenceType.WORKDAY:
-            return f'Workday(date={self.date}, absence={self.absence}'
+            return f'Workday(date={self.date}, absence={self.absence})'
 
         return f'Workday(date={self.date}, begin={self.begin}, end={self.end}, pause={self.pause})'
 

@@ -1,10 +1,12 @@
 """Infrastructure to the database"""
 
+import logging
 from datetime import date, datetime, time, timedelta
 from json import JSONEncoder
 from pathlib import Path
 from typing import Optional, Union
 
+import holidays
 from tinydb import TinyDB
 from tinydb.table import Document, Table
 
@@ -144,3 +146,20 @@ class Database:
         data = [value for value in self.__table(end.year).all() if value.doc_id <= end]
 
         return [WorkDay.decode(item) for item in data]
+
+    def update_public_holidays(self, year: int):
+        """Updates the public holidays for the given year
+
+        Args:
+            year (int): year of the public holidays
+        """
+
+        for day, name in holidays.DE(prov='BW', years=year).items():
+            workday = self.load(day)
+            if workday is None:
+                logging.info('Database - added public holiday: %s %s', day, name)
+            else:
+                logging.info('Database - overriding %s with public holiday: %s %s', workday, day, name)
+
+            workday = WorkDay(day, AbsenceType.HOLIDAY)
+            self.store(workday)

@@ -127,7 +127,11 @@ def show(month: int, year: int):
 
 @click.command(help='Notifies about an absence day')
 @click.option('-d', '--date', required=True, type=str, help='Date of workday in format: dd.mm.yyyy')
-@click.option('-a', '--absence', required=True, type=str, help='Absence type: W=Workday, V=Vacation, F=Flexday, S=Sickness')
+@click.option('-a',
+              '--absence',
+              required=True,
+              type=str,
+              help='Absence type: W=Workday, V=Vacation, F=Flexday, S=Sickness, H=Holiday')
 def notify(date: str, absence: str):
     """Command for notifying about an absence day.
 
@@ -145,3 +149,20 @@ def notify(date: str, absence: str):
         viewer.display(workday)
     except ValueError as err:
         error(err)
+
+
+@click.command(help='Updates public holidays of a given year')
+@click.option('-y',
+              '--year',
+              required=True,
+              type=int,
+              default=datetime.now().date().year,
+              help='Year of which the public holidays should be set')
+def holidays(year: int):
+    """Updates the public holidays of the given year
+
+    Args:
+        year (int): year of the holidays
+    """
+
+    database.update_public_holidays(year)

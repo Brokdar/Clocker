@@ -2,7 +2,7 @@ import logging
 
 import click
 
-from clocker.cli import notify, remove, show, start, stop, track
+from clocker.cli import holidays, notify, remove, show, start, stop, track
 
 
 @click.group()
@@ -26,6 +26,7 @@ cli.add_command(track)
 cli.add_command(remove)
 cli.add_command(show)
 cli.add_command(notify)
+cli.add_command(holidays)
 
 if __name__ == '__main__':
     #pylint: disable = no-value-for-parameter

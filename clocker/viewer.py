@@ -7,7 +7,7 @@ from rich.style import Style
 from rich.table import Table
 
 from clocker import converter
-from clocker.model import WorkDay
+from clocker.model import AbsenceType, WorkDay
 from clocker.settings import Settings
 from clocker.statistics import StatisticHandler
 
@@ -54,7 +54,10 @@ class Viewer:
                 style += Style(color='grey42')
 
             if idx < len(data) and day == data[idx].date:
-                table.add_row(*self.__convert(data[idx]), style=style)
+                if data[idx].absence == AbsenceType.HOLIDAY:
+                    table.add_row(*self.__convert(data[idx]), style=Style(color='cyan'))
+                else:
+                    table.add_row(*self.__convert(data[idx]), style=style)
                 idx += 1
             else:
                 table.add_row(converter.date_to_str(day), style=style)
@@ -72,11 +75,9 @@ class Viewer:
 
         self.__console.print(' | '.join([
             f'Vacation {statistics.count.vacation}/{statistics.accessable_vacation_days} ({statistics.accessable_vacation_days - statistics.count.vacation})',
-            f'Flexday {statistics.count.flex}', f'Sickness {statistics.count.sick}'
+            f'Flexday {statistics.count.flex}', f'Sickness {statistics.count.sick}',
+            f'Flextime {self.__colorize(converter.delta_to_str(statistics.flextime))}'
         ]))
-        self.__console.print(
-            f'Flextime {converter.delta_to_str(statistics.working_hours)}/{converter.delta_to_str(statistics.target_working_hours)} ({self.__colorize(converter.delta_to_str(statistics.flextime))})'
-        )
 
     def __convert(self, workday: WorkDay) -> list:
         if workday.is_absence_day():

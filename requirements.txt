@@ -4,3 +4,4 @@ pylint
 yapf
 click
 tinydb
+holidays

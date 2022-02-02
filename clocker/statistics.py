@@ -46,7 +46,8 @@ class StatisticHandler:
 
         Returns:
             Statistics: statistic object containing all information
-        """        
+        """
+         
         statistics = Statistics()
 
         working_hours = self.__settings.read('Work', 'WorkingHours')
