@@ -47,28 +47,34 @@ class StatisticHandler:
         Returns:
             Statistics: statistic object containing all information
         """
-         
+
         statistics = Statistics()
 
         working_hours = self.__settings.read('Work', 'WorkingHours')
         statistics.accessable_vacation_days = self.__settings.read('Work', 'VacationDays')
+
+        if not data:
+            return statistics
 
         if data[0].date.year != data[-1].date.year:
             raise ValueError(f'data set is not from the same year: {data[0].date.year} != {data[-1].date.year}')
 
         first_day = date(data[0].date.year, 1, 1)
         last_day = data[-1].date
-        statistics.target_working_days = _count_target_working_days(first_day, last_day)
-        statistics.target_working_hours = timedelta(seconds=statistics.target_working_days * working_hours.total_seconds())
+        statistics.target_working_days = _count_workdays(first_day, last_day)
 
         for workday in data:
             self.__count(workday, statistics.count)
 
             if workday.absence == AbsenceType.WORKDAY:
                 statistics.working_hours += workday.duration
+            elif workday.absence == AbsenceType.HOLIDAY:
+                if _is_weekday(workday.date):
+                    statistics.target_working_days -= 1
             elif workday.absence != AbsenceType.FLEXDAY:
                 statistics.working_hours += working_hours
 
+        statistics.target_working_hours = timedelta(seconds=statistics.target_working_days * working_hours.total_seconds())
         statistics.flextime = statistics.working_hours - statistics.target_working_hours
 
         return statistics
@@ -85,6 +91,8 @@ class StatisticHandler:
                 count.flex += 1
             case AbsenceType.SICKNESS:
                 count.sick += 1
+            case AbsenceType.HOLIDAY:
+                return
             case _:
                 logging.error('Statistics - count: invalid absence type %s', workday.absence)
 
@@ -103,7 +111,7 @@ class StatisticHandler:
             return timedelta(0)
         return data.duration - self.__settings.read('Work', 'WorkingHours')
 
-def _count_target_working_days(first_day: date, last_day: date) -> int:
+def _count_workdays(first_day: date, last_day: date) -> int:
     day_generator = (first_day + timedelta(x + 1) for x in range((last_day - first_day).days))
     return sum(_is_weekday(day) for day in day_generator)
 

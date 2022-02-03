@@ -3,7 +3,7 @@ from datetime import date, time, timedelta
 import pytest
 from clocker.model import AbsenceType, WorkDay
 from clocker.settings import Settings
-from clocker.statistics import StatisticHandler, _count_target_working_days
+from clocker.statistics import StatisticHandler, _count_workdays
 
 
 @pytest.mark.parametrize("start,end,expected", [(date(2022, 1, 1), date(2022, 1, 31), 21),
@@ -12,7 +12,7 @@ from clocker.statistics import StatisticHandler, _count_target_working_days
                                                 (date(2022, 1, 1), date(2022, 6, 30), 129),
                                                 (date(2022, 1, 1), date(2022, 12, 31), 260)])
 def test_count_target_working_days(start: date, end: date, expected: int):
-    result = _count_target_working_days(start, end)
+    result = _count_workdays(start, end)
 
     assert result == expected
 
