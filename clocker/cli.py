@@ -1,7 +1,7 @@
 """Command Line Interface of Clocker"""
 
 import logging
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 import click
@@ -134,9 +134,10 @@ def show(month: int, year: int):
     monthly_data = database.load_month(month, year)
     viewer.display_month(month, year, monthly_data)
 
-    data = []
     if monthly_data:
         data = database.all_until(monthly_data[-1].date)
+    else:
+        data = database.all_until(date(year, month, 1))
 
     viewer.display_statistics(data)
 
