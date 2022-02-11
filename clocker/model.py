@@ -108,14 +108,22 @@ class WorkDay:
             WorkDay: WorkDay instance
         """
 
-        if not all(key in data for key in ['begin', 'end', 'pause']):
-            raise KeyError(f'Not all keys are available for {data}')
+        workday = cls(data.doc_id)
+        for key, value in data.items():
+            if key in cls.__dict__ and value is None:
+                continue
 
-        absence = AbsenceType(data['absence']) if data['absence'] is not None else AbsenceType.WORKDAY
-        start = time.fromisoformat(data['begin']) if data['begin'] is not None else None
-        end = time.fromisoformat(data['end']) if data['end'] is not None else None
-        t_pause = time.fromisoformat(data['pause']) if data['pause'] is not None else None
-        pause = timedelta(hours=t_pause.hour, minutes=t_pause.minute,
-                          seconds=t_pause.second) if t_pause is not None else timedelta(0)
+            match key:
+                case 'absence':
+                    workday.absence = AbsenceType(value)
+                case 'begin':
+                    workday.begin = time.fromisoformat(value)
+                case 'end':
+                    workday.end = time.fromisoformat(value)
+                case 'pause':
+                    if pause := time.fromisoformat(value):
+                        workday.pause = timedelta(hours=pause.hour, minutes=pause.minute, seconds=pause.second)
+                case _:
+                    raise KeyError(f'Invalid key ({key}) within {data}')
 
-        return cls(data.doc_id, absence, start, end, pause)
+        return workday
