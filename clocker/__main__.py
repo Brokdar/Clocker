@@ -2,7 +2,7 @@ import logging
 
 import click
 
-from clocker.cli import holidays, notify, remove, show, start, stop, track
+from clocker.cli import (holidays, notify, remove, report, show, start, stop, track)
 
 
 @click.group()
@@ -25,6 +25,7 @@ cli.add_command(stop)
 cli.add_command(track)
 cli.add_command(remove)
 cli.add_command(show)
+cli.add_command(report)
 cli.add_command(notify)
 cli.add_command(holidays)
 

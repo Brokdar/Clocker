@@ -18,6 +18,7 @@
     "python.testing.pytestEnabled": true,
     "cSpell.words": [
         "ENOENT",
+        "fpdf",
         "tinydb"
     ]
 }

@@ -5,3 +5,4 @@ yapf
 click
 tinydb
 holidays
+fpdf2

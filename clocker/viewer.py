@@ -8,15 +8,14 @@ from rich.table import Table
 
 from clocker import converter
 from clocker.model import AbsenceType, WorkDay
-from clocker.settings import Settings
 from clocker.statistics import StatisticHandler
 
 
 class Viewer:
     """Viewer class for displaying a single WorkDay or a set of WorkDays"""
 
-    def __init__(self, settings: Settings):
-        self.__stats = StatisticHandler(settings)
+    def __init__(self, statistic: StatisticHandler):
+        self.__stats = statistic
         self.__console = Console()
 
     def display(self, day: WorkDay):

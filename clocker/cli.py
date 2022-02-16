@@ -10,11 +10,17 @@ from clocker import converter
 from clocker.core import SettingsError, Tracker
 from clocker.database import Database
 from clocker.model import AbsenceType
+from clocker.report import Reporter
 from clocker.settings import Settings
+from clocker.statistics import StatisticHandler
 from clocker.viewer import Viewer
 
 settings = Settings('settings.ini')
-database = Database(settings.read('Database', 'Path'))
+database = Database(settings.read('Path', 'Database'))
+statistics = StatisticHandler(settings)
+tracker = Tracker(settings, database)
+viewer = Viewer(statistics)
+reporter = Reporter(settings.read('Path', 'Reports'), statistics)
 
 
 def error(msg: str):
@@ -43,9 +49,6 @@ def warning(msg: str):
 def start():
     """Command for starting the time tracking for the current day."""
 
-    tracker = Tracker(settings, database)
-    viewer = Viewer(settings)
-
     try:
         workday = tracker.start()
         viewer.display(workday)
@@ -56,9 +59,6 @@ def start():
 @click.command(help='Stops the time tracking for the current day')
 def stop():
     """Command for stopping the time tracking for the current day."""
-
-    tracker = Tracker(settings, database)
-    viewer = Viewer(settings)
 
     try:
         workday = tracker.stop()
@@ -84,9 +84,6 @@ def track(date: str, begin: Optional[str], end: Optional[str], pause: Optional[s
         pause (Optional[str]): Pause time of workday
     """
 
-    tracker = Tracker(settings, database)
-    viewer = Viewer(settings)
-
     data = [
         converter.str_to_date(date),
         converter.str_to_time(begin) if begin is not None else None,
@@ -110,8 +107,6 @@ def remove(date: str):
         date (str): Date of the workday
     """
 
-    tracker = Tracker(settings, database)
-
     try:
         tracker.remove(converter.str_to_date(date))
     except ValueError as err:
@@ -122,24 +117,35 @@ def remove(date: str):
 @click.option('-m', '--month', type=int, default=datetime.now().date().month, help='Month to show, defaults to current month')
 @click.option('-y', '--year', type=int, default=datetime.now().date().year, help='Year to show, defaults to current year')
 def show(month: int, year: int):
-    """Command for showing all workdays of the given month and year.
+    """Command for showing all workdays of the given month and year
 
     Args:
         month (int): Month to display
         year (int): Year to display
     """
 
-    viewer = Viewer(settings)
-
     monthly_data = database.load_month(month, year)
     viewer.display_month(month, year, monthly_data)
 
-    if monthly_data:
-        data = database.all_until(monthly_data[-1].date)
-    else:
-        data = database.all_until(date(year, month, 1))
-
+    data = database.all_until(monthly_data[-1].date) if monthly_data else database.all_until(date(year, month, 1))
     viewer.display_statistics(data)
+
+
+@click.command(help='Generates a PDF report for the given month and year')
+@click.option('-m', '--month', type=int, default=datetime.now().date().month, help='Month to show, defaults to current month')
+@click.option('-y', '--year', type=int, default=datetime.now().date().year, help='Year to show, defaults to current year')
+def report(month: int, year: int):
+    """Command for generating PDF reports for the given month and year
+
+    Args:
+        month (int): month of the report
+        year (int): year of the report
+    """
+
+    monthly_data = database.load_month(month, year)
+    data = database.all_until(monthly_data[-1].date) if monthly_data else database.all_until(date(year, month, 1))
+
+    reporter.generate(month, year, data)
 
 
 @click.command(help='Notifies about an absence day')
@@ -156,9 +162,6 @@ def notify(date: str, absence: str):
         date (str): Date of absence day
         absence (int): Type of absence day
     """
-
-    tracker = Tracker(settings, database)
-    viewer = Viewer(settings)
 
     try:
         absence_type = AbsenceType.from_abbreviation(absence)
