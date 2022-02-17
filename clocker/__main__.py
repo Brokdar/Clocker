@@ -1,13 +1,21 @@
+"""Clocker main"""
+
 import logging
 
 import click
 
-from clocker.cli import (holidays, notify, remove, report, show, start, stop, track)
+from clocker.cli import (error, holidays, notify, remove, report, show, start, stop, track)
 
 
 @click.group()
 @click.option('-d', '--debug', default=False, is_flag=True, help='Sets logging level to debug')
 def cli(debug: bool):
+    """Command Line Interface. Group of available commands.
+
+    Args:
+        debug (bool): set logging level to debug
+    """
+
     if debug:
         logging.basicConfig(filename='clocker.log',
                             level=logging.DEBUG,
@@ -30,5 +38,7 @@ cli.add_command(notify)
 cli.add_command(holidays)
 
 if __name__ == '__main__':
-    #pylint: disable = no-value-for-parameter
-    cli()
+    try:
+        cli()  #pylint: disable = no-value-for-parameter
+    except Exception as err:  # pylint: disable = broad-except
+        error(err)

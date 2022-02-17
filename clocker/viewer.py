@@ -73,8 +73,9 @@ class Viewer:
         statistics = self.__stats.collect(data)
 
         self.__console.print(' | '.join([
-            f'Vacation {statistics.count.vacation}/{statistics.accessable_vacation_days} ({statistics.accessable_vacation_days - statistics.count.vacation})',
-            f'Flexday {statistics.count.flex}', f'Sickness {statistics.count.sick}',
+            f'Vacation {statistics.count.vacation}/{statistics.accessable_vacation_days} ({statistics.accessable_vacation_days - statistics.count.vacation})',  # pylint: disable = line-too-long
+            f'Flexday {statistics.count.flex}',
+            f'Sickness {statistics.count.sick}',
             f'Flextime {self.__colorize(converter.delta_to_str(statistics.flextime))}'
         ]))
 

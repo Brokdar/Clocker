@@ -10,7 +10,7 @@ from clocker.settings import Settings
 
 
 class SettingsError(Exception):
-    pass
+    """Custom Exception for signaling errors related to settings"""
 
 
 class Tracker:

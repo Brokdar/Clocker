@@ -74,7 +74,7 @@ def stop():
 @click.option('-b', '--begin', type=str, default=None, help='Start time of workday in format: hh:mm[:ss]')
 @click.option('-e', '--end', type=str, default=None, help='End time of workday in format: hh:mm[:ss]')
 @click.option('-p', '--pause', type=str, default=None, help='Pause time on workday in format: hh:mm[:ss]')
-def track(date: str, begin: Optional[str], end: Optional[str], pause: Optional[str]):
+def track(date: str, begin: Optional[str], end: Optional[str], pause: Optional[str]):  # pylint: disable = redefined-outer-name
     """Command for manual tracking time for a given workday.
 
     Args:
@@ -100,7 +100,7 @@ def track(date: str, begin: Optional[str], end: Optional[str], pause: Optional[s
 
 @click.command(help='Remove a workday from database')
 @click.option('-d', '--date', required=True, type=str, help='Date of workday in format: dd.mm.yyyy')
-def remove(date: str):
+def remove(date: str):  # pylint: disable = redefined-outer-name
     """Command for removing a workday from the database
 
     Args:
@@ -155,7 +155,7 @@ def report(month: int, year: int):
               required=True,
               type=str,
               help='Absence type: W=Workday, V=Vacation, F=Flexday, S=Sickness, H=Holiday')
-def notify(date: str, absence: str):
+def notify(date: str, absence: str):  # pylint: disable = redefined-outer-name
     """Command for notifying about an absence day.
 
     Args:

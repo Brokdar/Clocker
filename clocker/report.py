@@ -22,12 +22,13 @@ class Reporter:
         self.__secondary_color = (125, 196, 234)
 
     def generate(self, month: int, year: int, data: list[WorkDay]):
-        """[summary]
+        """Generate a PDF report for the given month and year.\n
+        self.__out/{month}-{year}_ClockerReport.pdf
 
         Args:
-            month (int): [description]
-            year (int): [description]
-            data (list[WorkDay]): [description]
+            month (int): month of the report
+            year (int): year of the report
+            data (list[WorkDay]): all workday records for the given month and year
         """
 
         pdf = FPDF()
@@ -41,8 +42,9 @@ class Reporter:
 
         statistics = self.__stats.collect(data)
         text = ' | '.join([
-            f'Vacation Days {statistics.count.vacation}/{statistics.accessable_vacation_days} ({statistics.accessable_vacation_days - statistics.count.vacation})',
-            f'Flex Days {statistics.count.flex}', f'Sick Days {statistics.count.sick}',
+            f'Vacation Days {statistics.count.vacation}/{statistics.accessable_vacation_days} ({statistics.accessable_vacation_days - statistics.count.vacation})',  # pylint: disable = line-too-long
+            f'Flex Days {statistics.count.flex}',
+            f'Sick Days {statistics.count.sick}',
             f'Flextime {converter.delta_to_str(statistics.flextime)}'
         ])
 
@@ -144,12 +146,12 @@ def _add_cell(pdf: FPDF, data: Optional[str] = None, align: str = 'C', backgroun
 
 
 def _get_windows_username() -> str:
-    GetUserNameEx = ctypes.windll.secur32.GetUserNameExW
-    NameDisplay = 3
+    get_user_name_ex = ctypes.windll.secur32.GetUserNameExW
+    name_display = 3
 
     size = ctypes.pointer(ctypes.c_ulong(0))
-    GetUserNameEx(NameDisplay, None, size)
+    get_user_name_ex(name_display, None, size)
 
-    nameBuffer = ctypes.create_unicode_buffer(size.contents.value)
-    GetUserNameEx(NameDisplay, nameBuffer, size)
-    return nameBuffer.value
+    name_buffer = ctypes.create_unicode_buffer(size.contents.value)
+    get_user_name_ex(name_display, name_buffer, size)
+    return name_buffer.value
