@@ -1,5 +1,10 @@
 # Clocker - Working Time Tracker
 
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
+[![GitHub license](https://badgen.net/github/license/Brokdar/Clocker)](https://github.com/Brokdar/Clocker/blob/main/LICENSE)
+
+<img src="./docs/img/logo.png" alt="drawing" width="200"/>
+
 ## Description
 
 Clocker is a console application for keeping track of your working time. The working time is stored in a local file-based database (JSON). With simple commands, you're able to start and stop the time tracking for the current day or generate/modify existing records.
@@ -17,7 +22,7 @@ With the configuration file `settings.ini` it is possible to specify default val
 - Automatically add public holidays
 - Compact and clear monthly view
 - Configurable default values and behaviors
-- (Planned) PDF report generation
+- PDF report generation
 
 ## Limitations
 
@@ -28,7 +33,7 @@ With the configuration file `settings.ini` it is possible to specify default val
 
 ### Command Overview
 
-```batch
+```text
 Usage: python -m clocker [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -49,7 +54,7 @@ Commands:
 
 #### Command - start
 
-```batch
+```text
 Usage: python -m clocker start [OPTIONS]
 
   Starts the time tracking for the current day
@@ -60,7 +65,7 @@ Options:
 
 #### Command - stop
 
-```batch
+```text
 Usage: python -m clocker stop [OPTIONS]
 
   Stops the time tracking for the current day
@@ -71,7 +76,7 @@ Options:
 
 #### Command - track
 
-```batch
+```text
 Usage: python -m clocker track [OPTIONS]
 
   Manual tracking of workdays, can be used to update values
@@ -86,7 +91,7 @@ Options:
 
 #### Command - notify
 
-```batch
+```text
 Usage: python -m clocker notify [OPTIONS]
 
   Notifies about an absence day
@@ -100,10 +105,23 @@ Options:
 
 #### Command - show
 
-```batch
+```text
 Usage: python -m clocker show [OPTIONS]
 
   Displays all tracked workdays of the given month and year
+
+Options:
+  -m, --month INTEGER  Month to show, defaults to current month
+  -y, --year INTEGER   Year to show, defaults to current year
+  --help               Show this message and exit.
+```
+
+#### Command - report
+
+```text
+Usage: python -m clocker report [OPTIONS]
+
+  Generates a PDF report for the given month and year
 
 Options:
   -m, --month INTEGER  Month to show, defaults to current month
