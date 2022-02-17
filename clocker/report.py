@@ -38,7 +38,8 @@ class Reporter:
         pdf.set_author(_get_windows_username())
 
         self.__create_title_banner(pdf, month, year)
-        self.__create_month_overview(pdf, month, year, data)
+        self.__create_month_overview(pdf, month, year,
+                                     [day for day in data if day.date.month == month and day.date.year == year])
 
         statistics = self.__stats.collect(data)
         text = ' | '.join([
@@ -109,6 +110,7 @@ class Reporter:
 
     def __add_row(self, pdf: FPDF, data: Union[date, WorkDay]):
         if isinstance(data, date):
+            background_color = (255, 255, 255)
             if data.weekday() >= 5:
                 background_color = (235, 235, 235)
 
