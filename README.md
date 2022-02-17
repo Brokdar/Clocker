@@ -44,6 +44,7 @@ Commands:
   holidays  Updates public holidays of a given year
   notify    Notifies about an absence day
   remove    Remove a workday from database
+  report    Generates a PDF report for the given month and year
   show      Displays all tracked workdays of the given month and year
   start     Starts the time tracking for the current day
   stop      Stops the time tracking for the current day
