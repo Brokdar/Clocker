@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from enum import Enum
 from typing import Optional
+
+from pydantic import BaseModel
 
 
 class AbsenceType(Enum):
@@ -46,8 +47,7 @@ class AbsenceType(Enum):
                 raise ValueError(f'invalid abbreviation string: {abbr}')
 
 
-@dataclass
-class WorkDay:
+class WorkDay(BaseModel):
     """Model for storing all relevant information about a workday."""
 
     date: date
@@ -92,10 +92,7 @@ class WorkDay:
             dict: Dictionary instance
         """
 
-        data = self.__dict__.copy()
-        del data['date']
-
-        return data
+        return self.dict(exclude={'date'})
 
     @classmethod
     def decode(cls, data: dict) -> WorkDay:
@@ -108,22 +105,5 @@ class WorkDay:
             WorkDay: WorkDay instance
         """
 
-        workday = cls(data.doc_id)
-        for key, value in data.items():
-            if key in cls.__dict__ and value is None:
-                continue
-
-            match key:
-                case 'absence':
-                    workday.absence = AbsenceType(value)
-                case 'begin':
-                    workday.begin = time.fromisoformat(value)
-                case 'end':
-                    workday.end = time.fromisoformat(value)
-                case 'pause':
-                    if pause := time.fromisoformat(value):
-                        workday.pause = timedelta(hours=pause.hour, minutes=pause.minute, seconds=pause.second)
-                case _:
-                    raise KeyError(f'Invalid key ({key}) within {data}')
-
-        return workday
+        data['date'] = data.doc_id
+        return WorkDay.parse_obj(data)

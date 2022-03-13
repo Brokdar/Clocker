@@ -6,3 +6,4 @@ click
 tinydb
 holidays
 fpdf2
+pydantic

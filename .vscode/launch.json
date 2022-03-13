@@ -29,8 +29,6 @@
             "module": "clocker",
             "args": [
                 "track",
-                "--date",
-                "01.01.2022",
                 "--begin",
                 "08:00",
                 "--end",

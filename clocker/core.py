@@ -123,7 +123,7 @@ class Tracker:
 
         workday = self.__db.load(day)
         if workday is None:
-            workday = WorkDay(day)
+            workday = WorkDay(date=day)
             logging.info('track (%s) - create new workday', workday.date)
         else:
             logging.info('track (%s) - update %s', workday.date, workday)
@@ -195,7 +195,7 @@ class Tracker:
         if workday is not None:
             logging.info('notify (%s) - overriding %s', day, workday)
 
-        workday = WorkDay(day, absence=absence_type)
+        workday = WorkDay(date=day, absence=absence_type)
         self.__db.store(workday)
 
         logging.info('notify (%s) - absence %s', day, workday.absence)
