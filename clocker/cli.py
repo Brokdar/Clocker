@@ -70,7 +70,11 @@ def stop():
 
 
 @click.command(help='Manual tracking of workdays, can be used to update values')
-@click.option('-d', '--date', required=True, type=str, help='Date of workday in format: dd.mm.yyyy')
+@click.option('-d',
+              '--date',
+              default=datetime.now().date().strftime("%d.%m.%Y"),
+              type=str,
+              help='Date of workday in format: dd.mm.yyyy')
 @click.option('-b', '--begin', type=str, default=None, help='Start time of workday in format: hh:mm[:ss]')
 @click.option('-e', '--end', type=str, default=None, help='End time of workday in format: hh:mm[:ss]')
 @click.option('-p', '--pause', type=str, default=None, help='Pause time on workday in format: hh:mm[:ss]')
