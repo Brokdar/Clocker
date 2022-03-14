@@ -56,6 +56,9 @@ class WorkDay(BaseModel):
     end: Optional[time] = None
     pause: timedelta = timedelta(0)
 
+    class Config:
+        validate_assignment: True
+
     def __str__(self) -> str:
         if self.absence != AbsenceType.WORKDAY:
             return f'Workday(date={self.date}, absence={self.absence})'
