@@ -30,6 +30,15 @@ class Viewer:
 
         self.__console.print(table)
 
+    def display_set(self, title: str, data: list[WorkDay]):
+        table = _table(title)
+        data.sort(key=lambda o: o.date)
+
+        for day in data:
+            table.add_row(*self.__convert(day))
+
+        self.__console.print(table)
+
     def display_month(self, month: int, year: int, data: list[WorkDay]):
         """Displays all workday records of the given month and year.
 

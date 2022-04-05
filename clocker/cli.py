@@ -160,25 +160,29 @@ def report(month: int, year: int):
     reporter.generate(month, year, data)
 
 
-@click.command(help='Notifies about an absence day')
-@click.option('-d', '--date', required=True, type=str, help='Date of workday in format: dd.mm.yyyy')
+@click.command(help='Notifies about an absence day or period')
+@click.option('-s', '--start', required=True, type=str, help='Start date of absence period in format: dd.mm.yyyy')
+@click.option('-e', '--end', type=str, help='End date of absence period in format: dd.mm.yyyy')
 @click.option('-a',
               '--absence',
               required=True,
               type=str,
               help='Absence type: W=Workday, V=Vacation, F=Flexday, S=Sickness, H=Holiday')
-def notify(date: str, absence: str):  # pylint: disable = redefined-outer-name
-    """Command for notifying about an absence day.
+def notify(start: str, end: Optional[str], absence: str):
+    """Command for notifying about an absence day or period.
 
     Args:
-        date (str): Date of absence day
+        start (str): Start date of absence period
+        end (Optional[str]): End date of absence period
         absence (int): Type of absence day
     """
 
     try:
         absence_type = AbsenceType.from_abbreviation(absence)
-        workday = tracker.notify(converter.str_to_date(date), absence_type)
-        viewer.display(workday)
+        start_date = converter.str_to_date(start)
+        end_date = converter.str_to_date(end) if end is not None else start_date
+        workdays = tracker.notify(start_date, end_date, absence_type)
+        viewer.display_set('Absence Days', workdays)
     except ValueError as err:
         error(err)
 

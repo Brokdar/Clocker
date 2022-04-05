@@ -2,7 +2,7 @@
 
 import logging
 from datetime import date, datetime, time, timedelta
-from typing import Optional
+from typing import Generator, Optional
 
 from clocker.database import Database
 from clocker.model import AbsenceType, WorkDay
@@ -180,27 +180,41 @@ class Tracker:
         else:
             raise ValueError(f'failed removing workday({day}) from database')
 
-    def notify(self, day: date, absence_type: AbsenceType) -> WorkDay:
-        """Notify about an absence day
+    def notify(self, start: date, end: date, absence_type: AbsenceType) -> list[WorkDay]:
+        """Notify about an absence period
 
         Args:
-            day (date): Date of the absence day
+            start (date): Start date of the absence period
+            end (date): End date of absence period
             absence_type (AbsenceType): Absence Type
 
         Returns:
-            WorkDay: workday model with absence type set
+            list[WorkDay]: workdays with set absence type
         """
 
-        workday = self.__db.load(day)
-        if workday is not None:
-            logging.info('notify (%s) - overriding %s', day, workday)
+        workdays = []
+        for day in iter_workdays(start, end):
+            workday = self.__db.load(day)
+            if workday is not None:
+                if workday.absence == AbsenceType.HOLIDAY:
+                    continue  # holidays aren't supposed to be overwritten
 
-        workday = WorkDay(date=day, absence=absence_type)
-        self.__db.store(workday)
+                logging.info('notify (%s) - overriding %s', workday.date, workday)
 
-        logging.info('notify (%s) - absence %s', day, workday.absence)
+            workday = WorkDay(date=day, absence=absence_type)
+            workdays.append(workday)
+            self.__db.store(workday)
 
-        return workday
+            logging.info('notify (%s) - absence %s', workday.date, workday.absence)
+
+        return workdays
+
+
+def iter_workdays(start: date, end: date) -> Generator[date, None, None]:
+    for n in range(int((end - start).days) + 1):
+        day = start + timedelta(days=n)
+        if day.weekday() < 5:  # only workdays
+            yield day
 
 
 def round_prev_quarter(value: time) -> time:

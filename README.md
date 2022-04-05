@@ -95,12 +95,12 @@ Options:
 ```text
 Usage: python -m clocker notify [OPTIONS]
 
-  Notifies about an absence day
+  Notifies about an absence day or period
 
 Options:
-  -d, --date TEXT     Date of workday in format: dd.mm.yyyy  [required]
-  -a, --absence TEXT  Absence type: W=Workday, V=Vacation, F=Flexday,
-                      S=Sickness, H=Holiday  [required]
+  -s, --start TEXT    Start date of absence period in format: dd.mm.yyyy  [required]
+  -e, --end TEXT      End date of absence period in format: dd.mm.yyyy
+  -a, --absence TEXT  Absence type: W=Workday, V=Vacation, F=Flexday, S=Sickness, H=Holiday  [required]
   --help              Show this message and exit.
 ```
 
