@@ -102,17 +102,22 @@ def track(date: str, begin: Optional[str], end: Optional[str], pause: Optional[s
         error(err)
 
 
-@click.command(help='Remove a workday from database')
-@click.option('-d', '--date', required=True, type=str, help='Date of workday in format: dd.mm.yyyy')
-def remove(date: str):  # pylint: disable = redefined-outer-name
-    """Command for removing a workday from the database
+@click.command(help='Remove one or multiple entries from database')
+@click.option('-s', '--start', required=True, type=str, help='Date of workday in format: dd.mm.yyyy')
+@click.option('-e', '--end', type=str, help='Date of workday in format: dd.mm.yyyy')
+def remove(start: str, end: str):
+    """Command for removing one or multiple entries from the database
 
     Args:
-        date (str): Date of the workday
+        start (str): Start date of the removing entries
+        end (str): End date of the removing entries
     """
 
     try:
-        tracker.remove(converter.str_to_date(date))
+        start_date = converter.str_to_date(start)
+        end_date = converter.str_to_date(end) if end is not None else start_date
+        workdays = tracker.remove(start_date, end_date)
+        viewer.display_set('Removed Entries', workdays)
     except ValueError as err:
         error(err)
 

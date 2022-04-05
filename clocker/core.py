@@ -160,25 +160,35 @@ class Tracker:
         else:
             logging.debug('pause (%s) - no pause time set because was end time not provided', workday.date)
 
-    def remove(self, day: date):
-        """Remove a WorkDay from the database
+    def remove(self, start: date, end: date) -> list[WorkDay]:
+        """Remove one or multiple WorkDay entries from the database
 
         Args:
-            day (date): Date of WorkDay
+            start (date): Start date of the removable period
+            end (date): End date of the removable period
 
         Raises:
             ValueError: Unexpected error while remove the WorkDay from the database
         """
 
-        workday = self.__db.load(day)
-        if workday is None:
-            logging.info('remove (%s) - no workday found', day)
-            return
+        workdays = []
+        for day in day_generator(start, end):
+            workday = self.__db.load(day)
+            if workday is None:
+                logging.debug('remove (%s) - no entry found', day)
+                continue
 
-        if self.__db.remove(day):
-            logging.info('remove (%s) - removed %s', day, workday)
-        else:
-            raise ValueError(f'failed removing workday({day}) from database')
+            if workday.absence == AbsenceType.HOLIDAY:
+                logging.debug('remove (%s) - skipped holiday', day)
+                continue  # holidays aren't allowed to be removed
+
+            if self.__db.remove(day):
+                workdays.append(workday)
+                logging.info('remove (%s) - removed %s', day, workday)
+            else:
+                raise ValueError(f'failed removing workday({day}) from database')
+
+        return workdays
 
     def notify(self, start: date, end: date, absence_type: AbsenceType) -> list[WorkDay]:
         """Notify about an absence period
@@ -193,10 +203,10 @@ class Tracker:
         """
 
         workdays = []
-        for day in iter_workdays(start, end):
+        for day in day_generator(start, end, True):
             workday = self.__db.load(day)
             if workday is not None:
-                if workday.absence == AbsenceType.HOLIDAY:
+                if workday.absence == AbsenceType.HOLIDAY or workday.absence == absence_type:
                     continue  # holidays aren't supposed to be overwritten
 
                 logging.info('notify (%s) - overriding %s', workday.date, workday)
@@ -210,10 +220,13 @@ class Tracker:
         return workdays
 
 
-def iter_workdays(start: date, end: date) -> Generator[date, None, None]:
+def day_generator(start: date, end: date, workdays_only: bool = False) -> Generator[date, None, None]:
     for n in range(int((end - start).days) + 1):
         day = start + timedelta(days=n)
-        if day.weekday() < 5:  # only workdays
+        if workdays_only:
+            if day.weekday() < 5:  # only workdays
+                yield day
+        else:
             yield day
 
 
