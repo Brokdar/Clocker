@@ -65,6 +65,11 @@ def str_to_date(value: str) -> date:
         date: date representation
     """
 
+    if value.startswith('-'):
+        days = int(value.strip('-'))
+        date = datetime.today() - timedelta(days=days)
+        return date.date()
+        
     return datetime.strptime(value, '%d.%m.%Y').date()
 
 
