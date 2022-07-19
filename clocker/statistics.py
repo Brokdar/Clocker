@@ -109,6 +109,8 @@ class StatisticHandler:
 
         if data.end is None:
             return timedelta(0)
+        if not _is_weekday(data.date):
+            return data.duration
         return data.duration - self.__settings.read('Work', 'WorkingHours')
 
 def _count_workdays(first_day: date, last_day: date) -> int:
